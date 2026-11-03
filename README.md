@@ -26,9 +26,9 @@ Download the full release ZIP, extract it outside the game directory, run **AC8W
 
 ## 1.1.0 更新 / Changes
 
-全新浅色航空简报界面、FPMCI 品牌与数值框显示修复；加入帧生成开关、导弹引导编辑以及 Build 26002268 镜头适配，保留 Build 25201480 支持。
+全新浅色航空简报界面、FPMCI 名称与数值框显示修复；加入帧生成开关、导弹引导编辑以及 Build 26002268 镜头适配，保留 Build 25201480 支持。
 
-New aviation briefing UI and FPMCI branding; fixed clipped numeric fields; added frame generation and guidance controls plus Build 26002268 camera compatibility, retaining Build 25201480 support.
+New aviation briefing UI and the FPMCI name; fixed clipped numeric fields; added frame generation and guidance controls plus Build 26002268 camera compatibility, retaining Build 25201480 support.
 
 已完成离线签名、原生镜头/设置测试和界面检查；更新后游戏内实测验收仍待完成。Offline and UI checks passed; updated-game acceptance testing is pending. See [release notes](CHANGELOG-1.1.0.md).
 

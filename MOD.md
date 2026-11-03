@@ -3,7 +3,7 @@
 ## Platform
 Windows desktop WPF (.NET Framework 4); this is not a web UI.
 
-## Product Purpose
+## MOD purpose
 First-Person Mouse Control Integration: install, launch and configure the user's Ace Combat 8 mouse-control MOD.
 
 ## Confirmed requirements

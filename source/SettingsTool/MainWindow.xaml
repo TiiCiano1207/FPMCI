@@ -109,7 +109,7 @@
      <StackPanel Orientation="Horizontal"><Canvas Width="30" Height="44" Margin="0,0,10,0">
       <Path Stroke="#087F9F" StrokeThickness="1.5" Data="M15,8 L15,14 M15,34 L15,40 M0,24 L6,24 M24,24 L30,24 M15,14 A10,10 0 1 1 14.99,14"/>
       <Path Fill="#087F9F" Data="M12,20 L24,30 L17,31 L14,37 Z"/>
-     </Canvas><TextBlock x:Name="Brand" Text="FPMCI" FontFamily="Bahnschrift SemiCondensed" FontSize="48" FontWeight="Bold"/></StackPanel>
+     </Canvas><TextBlock x:Name="ModName" Text="FPMCI" FontFamily="Bahnschrift SemiCondensed" FontSize="48" FontWeight="Bold"/></StackPanel>
      <TextBlock Text="FIRST-PERSON MOUSE&#10;CONTROL INTEGRATION" FontFamily="Bahnschrift SemiCondensed" FontSize="12" LineHeight="17" Foreground="#496878" Margin="0,8,0,0"/>
      <TextBlock Text="第一人称鼠标操控整合" FontSize="11" Foreground="#496878" Margin="0,8,0,0"/>
     </StackPanel>

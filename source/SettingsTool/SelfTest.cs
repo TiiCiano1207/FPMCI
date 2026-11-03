@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -114,7 +114,7 @@ namespace AC8Settings {
     Check(new ConfigStore(root).State.Values["fov_cockpit"]==0,"FOV page defaults did not restore original FOV.");
     Check(new ConfigStore(root).State.Values["first_person_follow"]==1&&new ConfigStore(root).State.Values["first_person_response"]==6,"First-person defaults not restored.");
     Check(new ConfigStore(root).State.Values["guidance_MSL"]==1,"Detached guidance input replayed a stale value after changing pages.");
-    Check(((TextBlock)ui.Window.FindName("Brand")).Text=="FPMCI","New product brand is missing.");
+    Check(((TextBlock)ui.Window.FindName("ModName")).Text=="FPMCI","MOD name is missing.");
     Check(ui.Window.Title.Contains("FPMCI"),"Window title did not adopt FPMCI.");
     foreach(int pageIndex in Enumerable.Range(0,10)){
      ui.ShowPage(pageIndex);ui.Window.UpdateLayout();

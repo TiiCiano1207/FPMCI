@@ -122,7 +122,7 @@ namespace AC8Settings {
     LoadInstallation();
     string fonts=System.IO.Path.Combine(root,"ui","fpmci","fonts")+System.IO.Path.DirectorySeparatorChar;
     var displayFont=new FontFamily(new Uri(fonts,UriKind.Absolute),"./#Big Shoulders");
-    ((TextBlock)Window.FindName("Brand")).FontFamily=displayFont;
+    ((TextBlock)Window.FindName("ModName")).FontFamily=displayFont;
     ((TextBlock)Window.FindName("PageCode")).FontFamily=displayFont;
     defaults.IsEnabled=true;ShowPage(page);Changed();SetStatus(page==5?"MOD 资源已就绪 · 定位游戏并选择安装方案":"已读取当前配置 · 调整后点击保存，下次启动生效");
    }catch(Exception ex){store=null;draft=null;editors.Clear();ErrorPage("配置暂时无法读取",ex.Message);SetStatus(ex.Message,true);save.IsEnabled=defaults.IsEnabled=restore.IsEnabled=false;}

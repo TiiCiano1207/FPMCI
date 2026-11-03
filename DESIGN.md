@@ -8,7 +8,7 @@ Canvas #E7EFF2; rail #DCE7EC; header/footer #DDEAF0. Primary text #142F3C; secon
 
 ## Typography
 
-Big Shoulders Bold: wordmark 48 and English page headings 34 WPF units. Microsoft YaHei UI: Chinese page titles 19, labels 14, descriptions 12. Bahnschrift SemiCondensed for compact metadata. Numeric input uses centered 16-unit Consolas. Chinese retains normal proportions. Official Big Shoulders OFL license ships in ui/fpmci/fonts/.
+Big Shoulders Bold: MOD name 48 and English page headings 34 WPF units. Microsoft YaHei UI: Chinese page titles 19, labels 14, descriptions 12. Bahnschrift SemiCondensed for compact metadata. Numeric input uses centered 16-unit Consolas. Chinese retains normal proportions. Official Big Shoulders OFL license ships in ui/fpmci/fonts/.
 
 ## Composition
 
