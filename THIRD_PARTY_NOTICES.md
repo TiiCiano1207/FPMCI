@@ -33,3 +33,9 @@ Bundled Chakra Petch SemiBold and Share Tech Mono retain their original names an
 ## Workbench analysis runtime
 
 This local integrated tool includes CPython and NumPy for the original analysis scripts. Full licenses are preserved at runtime/python/LICENSE.txt and runtime/python/Lib/site-packages/numpy-2.3.5.dist-info/LICENSE.txt. See also licenses/Workbench-Python-NumPy.txt.
+
+
+## Big Shoulders
+Copyright 2019 The Big Shoulders Project Authors. SIL Open Font License 1.1.
+Source: https://github.com/google/fonts/tree/main/ofl/bigshoulders
+Static instance: weight 700 / optical size 36. License: ui/fpmci/fonts/OFL-BigShoulders.txt.

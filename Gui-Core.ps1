@@ -62,8 +62,8 @@ function Invoke-AC8GuiAction {
  }
  & (Join-Path $Root 'Check-Package.ps1') -PackageRoot $Root
  $exe=Join-Path $game 'Game/Binaries/Win64/AceCombat8.exe'
- if((Get-AC8FileHash -LiteralPath $exe).Hash -ne '51510E2A520565DBE81FB0D569E95CD4393077ACAAA859371489B80B8128829F'){
-  Stop-AC8Problem 'GAME_BUILD' '游戏版本与本包适配版本不一致。' '本包适配 Build 25201480，请核对游戏版本。'
+ if((Get-AC8FileHash -LiteralPath $exe).Hash -notin @('51510E2A520565DBE81FB0D569E95CD4393077ACAAA859371489B80B8128829F','3E47FD42858D1F2B81E59D7F57394A014C0EB6AAF4C02EE3DA351B6A42936BE2')){
+  Stop-AC8Problem 'GAME_BUILD' '游戏版本与本包适配版本不一致。' '本包适配 Build 25201480 / 26002268，请核对游戏版本。'
  }
  $steam=$SteamPath.Trim().Trim('"')
  if(!$steam -or !(Test-Path -LiteralPath $steam -PathType Leaf) -or [IO.Path]::GetFileName($steam) -ine 'steam.exe'){

@@ -1,0 +1,2 @@
+Big Shoulders from https://github.com/google/fonts/tree/main/ofl/bigshoulders
+Static instance: weight 700, optical size 36. Generated with fontTools; original OFL license included.

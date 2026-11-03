@@ -37,6 +37,7 @@ int main(){
  alignas(8) std::array<unsigned char,0x1600> manager{};
  manager.fill(0x5a);
  auto base=reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr));
+ native_camera_vtable_rva=0xC9D3160;
  *reinterpret_cast<uintptr_t*>(manager.data())=base+0xC9D3160;
  *reinterpret_cast<uintptr_t*>(pawn.data()+0x1A0)=reinterpret_cast<uintptr_t>(root.data());
  double position[3]={100000000,200000000,300000000};memcpy(root.data()+0x220,position,sizeof(position));
@@ -45,6 +46,11 @@ int main(){
  auto originalBytes=manager;
  CameraCommand command;command.pawn=reinterpret_cast<uintptr_t>(pawn.data());command.p=0;command.y=0;command.r=0;
  CameraSample sample;
+ native_camera_vtable_rva=0;assert(!apply_native_camera(manager.data(),command,0,sample));
+ native_camera_vtable_rva=0xC9BCE20;assert(!apply_native_camera(manager.data(),command,0,sample));
+ *reinterpret_cast<uintptr_t*>(manager.data())=base+0xC9BCE20;
+ assert(apply_native_camera(manager.data(),command,0,sample));
+ native_camera_vtable_rva=0xC9D3160;*reinterpret_cast<uintptr_t*>(manager.data())=base+0xC9D3160;
  assert(apply_native_camera(manager.data(),command,0,sample));
  assert(sample.pov[0]==originalPOV[0]&&sample.pov[1]==originalPOV[1]&&sample.pov[2]==originalPOV[2]);
  assert(sample.pov[3]==0&&sample.pov[4]==0);

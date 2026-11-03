@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -27,13 +27,14 @@ namespace AC8Settings {
  public sealed partial class SettingsWindow {
   public Window Window;
   ConfigStore store;ConfigState draft;string savedSignature="";DispatcherTimer configTimer;
-  bool savedSteamLaunch=true;bool loading,previewMode;int page=5;bool light;bool autoStarted;
+  bool savedSteamLaunch=true;bool loading,previewMode;int page=5;bool autoStarted;
   TextBlock title,description,status,packageName;
   StackPanel body,nav;Button save,defaults,restore;
   List<Button> navButtons=new List<Button>();List<Editor> editors=new List<Editor>();
   List<Shape> reticle=new List<Shape>();Canvas previewCanvas;
   FontFamily numbers=new FontFamily("Consolas");
-  readonly string[] titles={"鼠标与飞控","相机与视角","准星与显示","键位设置","高级飞控","安装与启动","模组管理","诊断与分析","安装说明"};
+  readonly string[] pageCodes={"FLIGHT CONTROL","CAMERA & VIEW","RETICLE & HUD","KEY BINDINGS","ADVANCED CONTROL","INSTALL & LAUNCH","MOD MANAGEMENT","DIAGNOSTICS","INSTALL GUIDE","MISSILE GUIDANCE"};
+  readonly string[] titles={"鼠标与飞控","相机与视角","准星与显示","键位设置","高级飞控","安装与启动","模组管理","诊断与分析","安装说明","导弹引导"};
   readonly string[] descriptions={
    "调整操纵手感。这里显示的是当前配置，保存后下次启动生效。",
    "调整 FOV、驾驶舱平滑跟随，以及机外镜头的位置与响应。",
@@ -43,26 +44,19 @@ namespace AC8Settings {
    "定位游戏、选择安装内容，再开始游戏。",
    "切换模组启停，检查原版启动条件，恢复异常退出后的会话。",
    "运行记录、完整性校验与内置运行数据分析。",
-   "安装 MOD 并设置游戏启动方式。"};
-  readonly string[] names={"安装与启动","常用设置","相机与视角","准星与显示","键位设置","高级飞控","模组管理","诊断与分析","安装说明"};
-  readonly int[] navPages={5,0,1,2,3,4,6,7,8};
+   "安装 MOD 并设置游戏启动方式。",
+   "直接编辑导弹提前量参数，保存后下次启动游戏生效。"};
+  readonly string[] names={"安装与启动","常用设置","相机与视角","准星与显示","键位设置","高级飞控","导弹引导","模组管理","诊断与分析","安装说明"};
+  readonly int[] navPages={5,0,1,2,3,4,9,6,7,8};
   readonly string[] icons={
    "M2,4 L18,4 M2,10 L18,10 M2,16 L18,16 M7,1 L7,7 M14,7 L14,13 M9,13 L9,19",
    "M2,6 L13,6 L13,15 L2,15 Z M13,9 L19,6 L19,15 L13,12",
    "M10,1 L10,5 M10,15 L10,19 M1,10 L5,10 M15,10 L19,10 M10,5 A5,5 0 1 1 9.99,5",
    "M1,4 L19,4 L19,17 L1,17 Z M4,7 L5,7 M8,7 L9,7 M12,7 L13,7 M16,7 L17,7 M4,11 L5,11 M8,11 L9,11 M12,11 L13,11 M4,14 L15,14",
    "M2,16 L6,16 L6,10 L10,10 L10,4 L15,4 M2,4 L5,4 M14,10 L18,10 M13,16 L18,16"};
-  static readonly Dictionary<string,string> LightColors=new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){
-   {"#101A22","#F3F1EB"},{"#15232D","#E6EBED"},{"#F1EEE6","#192A35"},{"#A8B8C2","#4E6471"},
-   {"#1B2B36","#F8FAFA"},{"#0C151C","#FFFFFF"},{"#344550","#BDCAD1"},{"#647C8C","#708592"},
-   {"#304451","#D6E1E6"},{"#172731","#FFFFFF"},{"#314957","#E1EAF0"},{"#3C3927","#FCE8BA"},
-   {"#526B7A","#708592"},{"#8097A5","#607585"},{"#324955","#B9C7CF"},{"#466372","#BBD2E0"},
-   {"#BDCED6","#46616F"},{"#FFAA97","#A33E2C"},{"#A08540","#A08540"},{"#607D8E","#718B9A"}};
-  public SettingsWindow(string root,bool preview,bool lightTheme=false){
-   previewMode=preview;light=lightTheme;
+  public SettingsWindow(string root,bool preview){
+   previewMode=preview;
    string xaml;using(var stream=Assembly.GetExecutingAssembly().GetManifestResourceStream("MainWindow.xaml"))using(var reader=new StreamReader(stream))xaml=reader.ReadToEnd();
-   xaml=xaml.Replace("Property=\"Foreground\" Value=\"#101A22\"","Property=\"Foreground\" Value=\"#111416\"").Replace("Property=\"Fill\" Value=\"#101A22\"","Property=\"Fill\" Value=\"#111416\"");
-   if(light)foreach(var pair in LightColors)xaml=xaml.Replace(pair.Key,pair.Value);
    Window=(Window)XamlReader.Parse(xaml);
    if(!preview){var area=SystemParameters.WorkArea;Window.MinWidth=Math.Min(Window.MinWidth,Math.Max(760,area.Width-24));Window.MinHeight=Math.Min(Window.MinHeight,Math.Max(560,area.Height-24));Window.Width=Math.Min(Window.Width,Math.Max(Window.MinWidth,area.Width-24));Window.Height=Math.Min(Window.Height,Math.Max(Window.MinHeight,area.Height-24));}
    title=(TextBlock)Window.FindName("PageTitle");description=(TextBlock)Window.FindName("PageDescription");
@@ -73,7 +67,8 @@ namespace AC8Settings {
     int index=navPages[i];var b=new Button{Style=(Style)Window.FindResource("Nav"),HorizontalContentAlignment=HorizontalAlignment.Left};
     var grid=new Grid();grid.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(26)});grid.ColumnDefinitions.Add(new ColumnDefinition());
     string[] extra={"M2,4 L18,4 L18,16 L2,16 Z M7,8 L14,10 L7,13 Z","M10,2 L18,6 L18,12 L10,18 L2,12 L2,6 Z M7,10 L9,12 L14,7","M3,17 L3,11 M8,17 L8,4 M13,17 L13,8 M18,17 L18,2","M3,3 L17,3 L17,17 L3,17 Z M8,7 C8,3 15,4 13,8 L10,11 M10,14 L10,15"};
-    var path=new System.Windows.Shapes.Path{Data=Geometry.Parse(index==5?extra[0]:index==6?extra[1]:index==7?extra[2]:index==8?extra[3]:icons[index]),Stroke=Brush("#A8B8C2"),StrokeThickness=1.4,Width=18,Height=18,Stretch=Stretch.Uniform,VerticalAlignment=VerticalAlignment.Center};
+    var path=new System.Windows.Shapes.Path{Data=Geometry.Parse(index==9?"M2,18 L17,3 M9,3 L17,3 L17,11 M3,8 L3,14 L9,14":index==5?extra[0]:index==6?extra[1]:index==7?extra[2]:index==8?extra[3]:icons[index]),StrokeThickness=1.4,Width=18,Height=18,Stretch=Stretch.Uniform,VerticalAlignment=VerticalAlignment.Center};
+    path.SetBinding(Shape.StrokeProperty,new System.Windows.Data.Binding("Foreground"){Source=b});
     var label=new TextBlock{Text=names[i],Margin=new Thickness(10,0,0,0),VerticalAlignment=VerticalAlignment.Center};
     Grid.SetColumn(label,1);grid.Children.Add(path);grid.Children.Add(label);b.Content=grid;
     b.Click+=(s,e)=>{if(CommitEditors())ShowPage(index);};nav.Children.Add(b);navButtons.Add(b);
@@ -82,7 +77,7 @@ namespace AC8Settings {
    ((Button)Window.FindName("StartGame")).Click+=(s,e)=>RunOperation("Start");
    ((CheckBox)Window.FindName("SteamLaunch")).Checked+=(s,e)=>Changed();
    ((CheckBox)Window.FindName("SteamLaunch")).Unchecked+=(s,e)=>Changed();
-   Window.SourceInitialized+=(s,e)=>{try{int dark=light?0:1;DwmSetWindowAttribute(new WindowInteropHelper(Window).Handle,20,ref dark,4);}catch{}};
+   Window.SourceInitialized+=(s,e)=>{int dark=0;DwmSetWindowAttribute(new WindowInteropHelper(Window).Handle,20,ref dark,4);};
    defaults.Click+=(s,e)=>ResetPage();
    restore.Click+=(s,e)=>Restore();
    ((Button)Window.FindName("ChoosePackage")).Click+=(s,e)=>ChooseFolder();
@@ -104,13 +99,12 @@ namespace AC8Settings {
    if(!string.IsNullOrEmpty(root))Open(root);
    else{save.IsEnabled=defaults.IsEnabled=restore.IsEnabled=false;ErrorPage("尚未选择 MOD 文件夹","点击左下方“切换文件夹”，选择包含 MouseAim-Settings.ini 的完整 MOD 包。");}
   }
-  SolidColorBrush Brush(string color){string mapped;if(light&&LightColors.TryGetValue(color,out mapped))color=mapped;return RawBrush(color);}
-  static SolidColorBrush RawBrush(string color){return (SolidColorBrush)new BrushConverter().ConvertFromString(color);}
+  static SolidColorBrush Brush(string color){return (SolidColorBrush)new BrushConverter().ConvertFromString(color);}
   [DllImport("dwmapi.dll")]static extern int DwmSetWindowAttribute(IntPtr hwnd,int attribute,ref int value,int size);
-  TextBlock Text(string text,double size=14,string color="#F1EEE6"){
+  TextBlock Text(string text,double size=14,string color="#142F3C"){
    return new TextBlock{Text=text,FontSize=size,Foreground=Brush(color),TextWrapping=TextWrapping.Wrap};
   }
-  void SetStatus(string text,bool error=false){status.Text=text;status.Foreground=Brush(error?"#FFAA97":"#A8B8C2");}
+  void SetStatus(string text,bool error=false){status.Text=text;status.Foreground=Brush(error?"#AF3928":"#496878");}
   bool Dirty(){return store!=null&&draft!=null&&draft.Signature()!=savedSignature||store!=null&&savedSteamLaunch!=(((CheckBox)Window.FindName("SteamLaunch")).IsChecked==true);}
   void Changed(){
    if(loading)return;
@@ -124,17 +118,16 @@ namespace AC8Settings {
     if(!previewMode&&!RootOwnership.Acquire(root))throw new InvalidOperationException("这个 MOD 文件夹的工具已经打开，请切换到已有窗口。");
     store=candidate;draft=store.State.Copy();savedSignature=draft.Signature();
     packageName.Text=new DirectoryInfo(root).Name;packageName.ToolTip=root;
-    ((TextBlock)Window.FindName("VersionText")).Text="MOD "+store.Version;
+    ((TextBlock)Window.FindName("VersionText")).Text="FPMCI  /  "+store.Version;
     LoadInstallation();
-    string fonts=System.IO.Path.Combine(root,"ui","creeperux","fonts")+System.IO.Path.DirectorySeparatorChar;
-    if(Directory.Exists(fonts)){
-     ((TextBlock)Window.FindName("Brand")).FontFamily=new FontFamily(new Uri(fonts,UriKind.Absolute),"./#Chakra Petch");
-     numbers=new FontFamily(new Uri(fonts,UriKind.Absolute),"./#Share Tech Mono");
-    }
+    string fonts=System.IO.Path.Combine(root,"ui","fpmci","fonts")+System.IO.Path.DirectorySeparatorChar;
+    var displayFont=new FontFamily(new Uri(fonts,UriKind.Absolute),"./#Big Shoulders");
+    ((TextBlock)Window.FindName("Brand")).FontFamily=displayFont;
+    ((TextBlock)Window.FindName("PageCode")).FontFamily=displayFont;
     defaults.IsEnabled=true;ShowPage(page);Changed();SetStatus(page==5?"MOD 资源已就绪 · 定位游戏并选择安装方案":"已读取当前配置 · 调整后点击保存，下次启动生效");
    }catch(Exception ex){store=null;draft=null;editors.Clear();ErrorPage("配置暂时无法读取",ex.Message);SetStatus(ex.Message,true);save.IsEnabled=defaults.IsEnabled=restore.IsEnabled=false;}
   }
-  void ErrorPage(string heading,string reason){title.Text=heading;description.Text="请选择正确的 MOD 文件夹，或先恢复有效配置。";body.Children.Clear();var t=Text(reason,14,"#FFAA97");t.Margin=new Thickness(0,18,0,0);body.Children.Add(t);}
+  void ErrorPage(string heading,string reason){title.Text=heading;description.Text="请选择正确的 MOD 文件夹，或先恢复有效配置。";body.Children.Clear();var t=Text(reason,14,"#AF3928");t.Margin=new Thickness(0,18,0,0);body.Children.Add(t);}
   void ChooseFolder(){
    if(!CommitEditors())return;
    if(Dirty()&&MessageBox.Show(Window,"切换文件夹会放弃尚未保存的调整。继续切换？","切换 MOD 文件夹",MessageBoxButton.YesNo,MessageBoxImage.Question)!=MessageBoxResult.Yes)return;
@@ -148,21 +141,26 @@ namespace AC8Settings {
    if(store==null)return;
    loading=true;page=index;editors.Clear();reticle.Clear();previewCanvas=null;
    body.Children.Clear();title.Text=titles[index];description.Text=descriptions[index];
+   ((TextBlock)Window.FindName("PageCode")).Text=pageCodes[index];RefreshHeader();
    ((ScrollViewer)Window.FindName("ContentScroll")).ScrollToTop();
    for(int i=0;i<navButtons.Count;i++){
-    navButtons[i].Background=Brush(navPages[i]==page?"#3C3927":"#15232D");
-    navButtons[i].BorderBrush=Brush(navPages[i]==page?"#A08540":"#15232D");
+    navButtons[i].Tag=navPages[i]==page?"selected":null;
    }
    int selected=Array.IndexOf(navPages,page);
    Window.Dispatcher.BeginInvoke(DispatcherPriority.Loaded,new Action(()=>navButtons[selected].BringIntoView()));
-   if(store==null){loading=false;return;}
    switch(index){
-    case 0:
+    case 0:{
+     var frameRow=Row("DLSS 帧生成","是否可用取决于游戏与显卡支持。保存后，下次启动游戏生效。");
+     var frameSwitch=new CheckBox{IsChecked=draft.FrameGenerationEnabled,Content=draft.FrameGenerationEnabled?"已开启":"已关闭",HorizontalAlignment=HorizontalAlignment.Right,VerticalAlignment=VerticalAlignment.Center};
+     AutomationProperties.SetName(frameSwitch,"DLSS 帧生成");
+     RoutedEventHandler frameChanged=(s,e)=>{if(loading)return;draft.FrameGenerationEnabled=frameSwitch.IsChecked==true;frameSwitch.Content=draft.FrameGenerationEnabled?"已开启":"已关闭";Changed();};
+     frameSwitch.Checked+=frameChanged;frameSwitch.Unchecked+=frameChanged;Grid.SetColumn(frameSwitch,1);frameRow.Children.Add(frameSwitch);
      Number("sensitivity","鼠标灵敏度","数值越高，移动相同距离时方向变化越大。",true);
      Number("free_look_zoom","自由观察放大","与自由观察键一起按住缩放键时的额外倍率；驾驶舱模式使用游戏原生缩放。",false,"倍");
      Choice("control_mode","默认飞控模式","PEACE 适合日常飞行；WAR 使用更精确的跟踪控制。",new[]{0,3},new[]{"PEACE · 日常飞行","WAR · 精确跟踪"});
      Toggle("model_assist","模型辅助","按飞机响应提供辅助制动。具体强度可在高级飞控中调整。");
      break;
+    }
     case 1:
      Choice("camera_mode","机外相机模式","进入驾驶舱或第一人称时自动保留游戏机位，C 键可自由观察。此处决定机外跟随方式；飞行中 F3 临时切换。",new[]{2,1,0},new[]{"游戏原生机位","机外拉远跟随","机外原生相对机位"});
      Note("用游戏的 V 键切换驾驶舱、第一人称与机外视角。驾驶舱保留原生位置；舱内平滑跟随可在下方设置。");
@@ -205,38 +203,41 @@ namespace AC8Settings {
     case 6:MaintenancePage();break;
     case 7:DiagnosticsPage();break;
     case 8:HelpPage();break;
+    case 9:GuidancePage();break;
    }
    save.Visibility=Visibility.Visible;
-   ((StackPanel)Window.FindName("SettingTools")).Visibility=page<=4?Visibility.Visible:Visibility.Collapsed;
+   ((StackPanel)Window.FindName("SettingTools")).Visibility=(page<=4||page==9)?Visibility.Visible:Visibility.Collapsed;
    ((Button)Window.FindName("StartGame")).IsEnabled=!busy;
    ((CheckBox)Window.FindName("SteamLaunch")).IsEnabled=!busy;
-   ((TextBlock)Window.FindName("FooterHint")).Text=page<=4?"下次启动生效":"资源与原有校验流程已保留";
+   ((TextBlock)Window.FindName("FooterHint")).Text=(page<=4||page==9)?"下次启动生效":"资源与原有校验流程已保留";
    loading=false;UpdatePreview();save.IsEnabled=page==5||Dirty();restore.IsEnabled=store.LatestBackup()!=null;
   }
   void Section(string heading,string hint){
    var s=new StackPanel{Margin=new Thickness(0,23,0,4)};
-   var h=Text(heading,17);h.FontWeight=FontWeights.SemiBold;s.Children.Add(h);
-   if(!string.IsNullOrEmpty(hint)){var t=Text(hint,12,"#A8B8C2");t.Margin=new Thickness(0,7,0,0);s.Children.Add(t);}
+   var headingRow=new StackPanel{Orientation=Orientation.Horizontal};
+   headingRow.Children.Add(new Rectangle{Width=6,Height=6,Fill=Brush("#087F9F"),Margin=new Thickness(0,0,10,0),VerticalAlignment=VerticalAlignment.Center});
+   var h=Text(heading,16);h.FontWeight=FontWeights.SemiBold;headingRow.Children.Add(h);s.Children.Add(headingRow);
+   if(!string.IsNullOrEmpty(hint)){var t=Text(hint,12,"#496878");t.Margin=new Thickness(0,7,0,0);s.Children.Add(t);}
    body.Children.Add(s);
   }
   void Note(string content){
-   var t=Text(content,12,"#BDCED6");t.Margin=new Thickness(0,13,0,17);t.LineHeight=21;body.Children.Add(t);
+   var t=Text(content,12,"#416574");t.Margin=new Thickness(0,13,0,17);t.LineHeight=21;body.Children.Add(t);
   }
   Grid Row(string label,string hint){
-   var border=new Border{BorderBrush=Brush("#344550"),BorderThickness=new Thickness(0,0,0,1),Padding=new Thickness(0,17,0,17)};
+   var border=new Border{BorderBrush=Brush("#BED3DD"),BorderThickness=new Thickness(0,0,0,1),Padding=new Thickness(0,15,0,15)};
    var g=new Grid();g.ColumnDefinitions.Add(new ColumnDefinition());g.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(270)});
    var s=new StackPanel{Margin=new Thickness(0,0,24,0),VerticalAlignment=VerticalAlignment.Center};
    var l=Text(label);l.FontWeight=FontWeights.Medium;s.Children.Add(l);
-   var h=Text(hint,12,"#A8B8C2");h.Margin=new Thickness(0,7,0,0);h.LineHeight=19;s.Children.Add(h);
+   var h=Text(hint,12,"#496878");h.Margin=new Thickness(0,7,0,0);h.LineHeight=19;s.Children.Add(h);
    g.Children.Add(s);border.Child=g;body.Children.Add(border);return g;
   }
   static string Format(double v){return v.ToString("0.###",CultureInfo.InvariantCulture);}
   void Number(string key,string label,string hint,bool logarithmic=false,string unit="",double scale=1){
    Rule rule=ConfigStore.Find(key);var row=Row(label+(unit.Length>0?"（"+unit+"）":""),hint);
    var controls=new Grid{VerticalAlignment=VerticalAlignment.Center};
-   controls.ColumnDefinitions.Add(new ColumnDefinition());controls.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(82)});
+   controls.ColumnDefinitions.Add(new ColumnDefinition());controls.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(104)});
    var slider=new Slider{Minimum=0,Maximum=100,SmallChange=1,LargeChange=5,IsMoveToPointEnabled=true,Margin=new Thickness(0,0,15,0)};
-   var input=new TextBox{Text=Format(draft.Values[key]*scale),FontFamily=numbers,FontSize=16,HorizontalContentAlignment=HorizontalAlignment.Center};
+   var input=new TextBox{Text=Format(draft.Values[key]*scale),FontFamily=numbers,FontSize=16,TextAlignment=TextAlignment.Center,Padding=new Thickness(8,9,8,9)};
    input.ToolTip="范围："+Format(rule.Min*scale)+"–"+Format(rule.Max*scale)+(unit.Length>0?" "+unit:"");
    AutomationProperties.SetName(input,label+"数值");AutomationProperties.SetName(slider,label+"滑块");
    Grid.SetColumn(input,1);controls.Children.Add(slider);controls.Children.Add(input);Grid.SetColumn(controls,1);row.Children.Add(controls);
@@ -250,7 +251,7 @@ namespace AC8Settings {
     bool ok=double.TryParse(input.Text.Trim(),NumberStyles.AllowDecimalPoint,CultureInfo.InvariantCulture,out v);
     v/=scale;
     ok=ok&&!double.IsNaN(v)&&!double.IsInfinity(v)&&v>=rule.Min&&v<=rule.Max&&(!rule.Integer||v==Math.Floor(v))&&(!key.StartsWith("fov_")||v==0||v>=40);
-    input.BorderBrush=Brush(ok?"#647C8C":"#FFAA97");
+    input.BorderBrush=Brush(ok?"#8EB7C9":"#AF3928");
     if(!ok){SetStatus(key.StartsWith("fov_")?label+"：请输入 0（原生）或 40–130 度。":label+"：请输入 "+Format(rule.Min*scale)+"–"+Format(rule.Max*scale)+(rule.Integer?" 的整数。":" 范围内的数值。"),true);return false;}
     draft.Values[key]=v;syncing=true;slider.Value=toSlider(v);syncing=false;Changed();return true;
    };
@@ -260,7 +261,7 @@ namespace AC8Settings {
    input.KeyDown+=(s,e)=>{if(e.Key==Key.Enter)commit();};
    slider.ValueChanged+=(s,e)=>{if(syncing||loading)return;double v=fromSlider(slider.Value);v=rule.Integer?Math.Round(v):Math.Round(v,3);
     if(key.StartsWith("fov_")){if(v>0&&v<40)v=40;v=Math.Round(v,1);}
-    syncing=true;input.Text=Format(v*scale);input.BorderBrush=Brush("#647C8C");draft.Values[key]=v;syncing=false;Changed();
+    syncing=true;input.Text=Format(v*scale);input.BorderBrush=Brush("#8EB7C9");draft.Values[key]=v;syncing=false;Changed();
    };
   }
   void Choice(string key,string label,string hint,int[] values,string[] labels){
@@ -290,12 +291,12 @@ namespace AC8Settings {
    layout.ColumnDefinitions.Add(new ColumnDefinition());layout.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(270)});
    var left=new StackPanel{Margin=new Thickness(0,4,26,0)};
    var l=Text("准星颜色",16);l.FontWeight=FontWeights.SemiBold;left.Children.Add(l);
-   var hint=Text("圆环、头瞄括号、参考十字与方向刻度统一使用这个颜色。",12,"#A8B8C2");hint.Margin=new Thickness(0,8,0,13);hint.LineHeight=20;left.Children.Add(hint);
+   var hint=Text("圆环、头瞄括号、参考十字与方向刻度统一使用这个颜色。",12,"#496878");hint.Margin=new Thickness(0,8,0,13);hint.LineHeight=20;left.Children.Add(hint);
    var colorRow=new Grid();colorRow.ColumnDefinitions.Add(new ColumnDefinition());colorRow.ColumnDefinitions.Add(new ColumnDefinition{Width=GridLength.Auto});
    var input=new TextBox{Text=draft.Color,FontFamily=numbers,FontSize=17,MaxLength=7};AutomationProperties.SetName(input,"准星颜色十六进制值");
    var pick=new Button{Content="选色",Padding=new Thickness(13,7,13,7),Margin=new Thickness(8,0,0,0)};Grid.SetColumn(pick,1);
    colorRow.Children.Add(input);colorRow.Children.Add(pick);left.Children.Add(colorRow);
-   Func<bool> commit=()=>{bool ok=Regex.IsMatch(input.Text,@"^#[0-9A-Fa-f]{6}$");input.BorderBrush=Brush(ok?"#647C8C":"#FFAA97");
+   Func<bool> commit=()=>{bool ok=Regex.IsMatch(input.Text,@"^#[0-9A-Fa-f]{6}$");input.BorderBrush=Brush(ok?"#8EB7C9":"#AF3928");
     if(!ok){SetStatus("颜色请填写 #RRGGBB，例如 #70FF90。",true);return false;}draft.Color=input.Text.ToUpperInvariant();Changed();return true;};
    editors.Add(new Editor{Key="color",Input=input,Commit=commit});input.TextChanged+=(s,e)=>{if(!loading)commit();};
    pick.Click+=(s,e)=>{using(var d=new Forms.ColorDialog()){
@@ -305,7 +306,7 @@ namespace AC8Settings {
    var presets=new WrapPanel{Margin=new Thickness(0,12,0,0)};
    foreach(var pair in new[]{new[]{"HUD 绿","#70FF90"},new[]{"冰青","#58CBE1"},new[]{"琥珀","#FFBD4A"},new[]{"白","#FFFFFF"}}){
     string hex=pair[1];var b=new Button{Content=pair[0],FontSize=11,Padding=new Thickness(8,5,8,5),MinHeight=29,Margin=new Thickness(0,0,6,6)};
-    b.BorderBrush=RawBrush(hex);b.Click+=(s,e)=>input.Text=hex;presets.Children.Add(b);
+    b.BorderBrush=Brush(hex);b.Click+=(s,e)=>input.Text=hex;presets.Children.Add(b);
    }left.Children.Add(presets);
    layout.Children.Add(left);
    var right=new StackPanel();
@@ -319,12 +320,12 @@ namespace AC8Settings {
    foreach(var p in new[]{new double[]{104,60,96,68},new double[]{166,60,174,68},new double[]{104,114,96,106},new double[]{166,114,174,106}}){
     var line=new Line{X1=p[0],Y1=p[1],X2=p[2],Y2=p[3],StrokeThickness=2};reticle.Add(line);previewCanvas.Children.Add(line);
    }
-   right.Children.Add(edge);var t=Text("颜色与透明度示意 · 实机光晕会有所不同",11,"#A8B8C2");t.Margin=new Thickness(0,8,0,0);right.Children.Add(t);
+   right.Children.Add(edge);var t=Text("颜色与透明度示意 · 实机光晕会有所不同",11,"#496878");t.Margin=new Thickness(0,8,0,0);right.Children.Add(t);
    Grid.SetColumn(right,1);layout.Children.Add(right);body.Children.Add(layout);
   }
   void UpdatePreview(){
    if(draft==null||reticle.Count==0||!Regex.IsMatch(draft.Color,@"^#[0-9A-Fa-f]{6}$"))return;
-   foreach(var s in reticle){s.Stroke=RawBrush(draft.Color);s.Opacity=draft.Values["hud_opacity"];if((string)s.Tag=="cross")s.Visibility=draft.Values["hud_boresight"]==0?Visibility.Hidden:Visibility.Visible;}
+   foreach(var s in reticle){s.Stroke=Brush(draft.Color);s.Opacity=draft.Values["hud_opacity"];if((string)s.Tag=="cross")s.Visibility=draft.Values["hud_boresight"]==0?Visibility.Hidden:Visibility.Visible;}
   }
   bool CommitEditors(){
    foreach(var editor in editors)if(!editor.Commit()){editor.Input.Focus();return false;}
@@ -353,13 +354,16 @@ namespace AC8Settings {
    catch(Exception ex){SetStatus(ex.Message,true);}
   }
   void ResetPage(){
-   if(store==null||page>4)return;var d=store.Defaults();
+   if(store==null)return;
+   if(page==9){foreach(var g in Guidance.Specs)draft.Values[g.Key]=g.Preset;ShowPage(page);Changed();SetStatus("导弹引导已恢复 MOD 默认值 · 保存后下次启动生效");return;}
+   if(page>4)return;var d=store.Defaults();
    string[][] sets={
     new[]{"sensitivity","free_look_zoom","control_mode","model_assist"},
     new[]{"camera_mode","camera_distance_m","camera_height_m","follow_rate","level_rate","fov_cockpit","fov_hud","fov_third_person","first_person_follow","first_person_response"},
     new[]{"hud_opacity","hud_boresight","hud_connector","hud_link_always","hud_fps","hud_renderer"},
     new string[0],new[]{"model_assist_strength","mouse_reference_fov","arrival_braking"}};
    foreach(string key in sets[page])draft.Values[key]=d.Values[key];
+   if(page==0)draft.FrameGenerationEnabled=false;
    if(page==2)draft.Color=d.Color;if(page==3)draft.Keys=new Dictionary<string,string>(d.Keys);
    ShowPage(page);Changed();SetStatus("本页已恢复默认 · 机外跟随为默认，驾驶舱保留原生机位，驾驶舱平滑跟随；准星默认为绿色");
   }
@@ -403,8 +407,8 @@ namespace AC8Settings {
     if(root==null)throw new DirectoryNotFoundException("请从完整 MOD 文件夹内运行 AC8Workbench.exe。EXE 旁需保留 payload、配置和启动脚本；不能只移动 EXE。");
     var app=new Application{ShutdownMode=ShutdownMode.OnLastWindowClose};bool snapshot=args.Contains("--snapshot");
     if(!snapshot&&root!=null&&!RootOwnership.Acquire(root)){MessageBox.Show("这个 MOD 文件夹的工具已经打开。","AC8");return 0;}
-    var ui=new SettingsWindow(root,snapshot,args.Contains("--light"));string page=Arg(args,"--page","install");
-    ui.ShowPage(page=="hud"?2:page=="camera"?1:page=="keys"?3:page=="advanced"?4:page=="common"?0:page=="manage"?6:page=="diagnostics"?7:page=="help"?8:5);
+    var ui=new SettingsWindow(root,snapshot);string page=Arg(args,"--page","install");
+    ui.ShowPage(page=="hud"?2:page=="camera"?1:page=="keys"?3:page=="advanced"?4:page=="common"?0:page=="manage"?6:page=="diagnostics"?7:page=="help"?8:page=="guidance"?9:5);
     if(snapshot)ui.Snapshot(Arg(args,"--snapshot",null),double.Parse(Arg(args,"--width","1080"),CultureInfo.InvariantCulture),double.Parse(Arg(args,"--height","760"),CultureInfo.InvariantCulture));
     else ui.Window.Show();
     try{app.Run();}finally{RootOwnership.Release();}return 0;

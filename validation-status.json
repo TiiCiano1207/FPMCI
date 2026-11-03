@@ -1,0 +1,8 @@
+{
+  "deploymentAllowed": true,
+  "candidateOnly": true,
+  "releaseAccepted": false,
+  "scope": "1.0.1 compatibility update: exact old/new executable hashes retained; new camera vtable/update/cache/actor getter independently resolved from PE and native registration table; native camera fixtures and settings/UI tests passed. Flight laws and other payload resources unchanged. Updated-game live validation, UE4SS/FOV and missile field baselines remain pending. UI 1.1.0: FPMCI light WPF redesign; settings persistence regression and numeric layout checks across all ten pages passed. Two native window sizes visually checked. Game payload unchanged; previous live-game validation limitation remains.",
+  "nativeControllerVersion": "2.4.2",
+  "gameBuild": "26002268"
+}

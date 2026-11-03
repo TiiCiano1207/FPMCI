@@ -15,8 +15,8 @@ while($true){
 Write-Host "已识别游戏根目录：$gameRoot"
 Assert-AC8PackageLocation $root $gameRoot
 $exe=Join-Path $gameRoot 'Game/Binaries/Win64/AceCombat8.exe'
-if((Get-AC8FileHash -LiteralPath $exe).Hash -ne '51510E2A520565DBE81FB0D569E95CD4393077ACAAA859371489B80B8128829F'){
- Stop-AC8Problem 'GAME_BUILD' '游戏版本与本包适配版本不一致。' '本包适配 Build 25201480。请核对游戏版本与发布说明，不要替换游戏 EXE 绕过校验。'
+if((Get-AC8FileHash -LiteralPath $exe).Hash -notin @('51510E2A520565DBE81FB0D569E95CD4393077ACAAA859371489B80B8128829F','3E47FD42858D1F2B81E59D7F57394A014C0EB6AAF4C02EE3DA351B6A42936BE2')){
+ Stop-AC8Problem 'GAME_BUILD' '游戏版本与本包适配版本不一致。' '本包适配 Build 25201480 / 26002268。请核对游戏版本与发布说明，不要替换游戏 EXE 绕过校验。'
 }
 $sessionPath=Join-Path $root 'active-session.json'
 if(Test-Path -LiteralPath $sessionPath){

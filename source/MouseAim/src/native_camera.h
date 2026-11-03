@@ -4,6 +4,12 @@ smooth_view::CockpitFollow first_person_camera;
 // native getter disassembly. Only location/rotation and the adjacent float FOV are eligible for changes.
 using CameraUpdate = void(__fastcall*)(void*,float);
 CameraUpdate original_camera_update=nullptr;
+struct NativeCameraLayout {DWORD timestamp,image_size;uintptr_t vtable,update,cache,actor;};
+constexpr NativeCameraLayout native_camera_layouts[]={
+    {0x6AA0E27D,0x2195A000,0xC9D3160,0x70C8ED0,0x48FC6B0,0x3FD7449}, // Build 25201480
+    {0x6AD2D0A7,0x215A2000,0xC9BCE20,0x70B4960,0x48EF260,0x3FCABC9}  // Build 26002268
+};
+uintptr_t native_camera_vtable_rva=0;
 struct CameraCommand { uintptr_t manager=0,pawn=0; double p=0,y=0,r=0; ULONGLONG tick=0; bool stock_view=false,follow_first_person=false; };
 std::mutex camera_command_mutex;
 CameraCommand camera_command;
@@ -71,7 +77,7 @@ bool apply_native_camera(void* manager,const CameraCommand& cmd,int mode,CameraS
     __try {
         auto base=reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr));
         native_camera_reject=CAM_VTABLE;
-        if(*reinterpret_cast<uintptr_t*>(manager)!=base+0xC9D3160) return false;
+        if(*reinterpret_cast<uintptr_t*>(manager)!=base+native_camera_vtable_rva) return false;
         native_camera_reject=CAM_ROOT;
         auto root=*reinterpret_cast<uintptr_t*>(cmd.pawn+0x1A0);
         if(root<65536||(root&7)) return false;
@@ -211,16 +217,21 @@ bool install_native_camera() {
     const unsigned char update_bytes[]={0x48,0x8B,0xC4,0x48,0x89,0x58,0x18,0x57,0x48,0x81,0xEC,0x40,0x01,0,0};
     const unsigned char cache_bytes[]={0x48,0x8D,0x81,0xA0,0x14,0,0,0xC3};
     const unsigned char actor_bytes[]={0x48,0x8B,0x81,0xA0,0x01,0,0};
-    if(nt->FileHeader.TimeDateStamp!=0x6AA0E27D || nt->OptionalHeader.SizeOfImage!=0x2195A000 ||
-       memcmp(base+0x70C8ED0,update_bytes,sizeof(update_bytes)) ||
-       memcmp(base+0x48FC6B0,cache_bytes,sizeof(cache_bytes)) ||
-       memcmp(base+0x3FD7430+0x19,actor_bytes,sizeof(actor_bytes))) {
+    const NativeCameraLayout* layout=nullptr;
+    for(const auto& candidate:native_camera_layouts){
+        if(candidate.timestamp==nt->FileHeader.TimeDateStamp&&candidate.image_size==nt->OptionalHeader.SizeOfImage){layout=&candidate;break;}
+    }
+    if(!layout ||
+       memcmp(base+layout->update,update_bytes,sizeof(update_bytes)) ||
+       memcmp(base+layout->cache,cache_bytes,sizeof(cache_bytes)) ||
+       memcmp(base+layout->actor,actor_bytes,sizeof(actor_bytes))) {
         log_line("native camera refused: executable identity/signature mismatch"); return false;
     }
-    auto slot=reinterpret_cast<void**>(base+0xC9D3160+241*sizeof(void*));
-    if(*slot!=base+0x70C8ED0) { log_line("native camera refused: vtable slot already changed"); return false; }
+    auto slot=reinterpret_cast<void**>(base+layout->vtable+241*sizeof(void*));
+    if(*slot!=base+layout->update) { log_line("native camera refused: vtable slot already changed"); return false; }
     DWORD protection=0;
     if(!VirtualProtect(slot,sizeof(void*),PAGE_READWRITE,&protection)) return false;
+    native_camera_vtable_rva=layout->vtable;
     original_camera_update=reinterpret_cast<CameraUpdate>(*slot);
     InterlockedExchangePointer(slot,reinterpret_cast<void*>(&update_native_camera));
     DWORD ignored=0; VirtualProtect(slot,sizeof(void*),protection,&ignored);

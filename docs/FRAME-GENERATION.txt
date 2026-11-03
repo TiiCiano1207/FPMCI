@@ -1,0 +1,12 @@
+﻿DLSS 帧生成
+通过 MOD 启动前，将以下两项合并到当前用户 Engine.ini 的 [ConsoleVariables]：
+r.Streamline.InitializePlugin=1
+r.Streamline.DLSSG.Enable=1
+
+目标：%LOCALAPPDATA%/BANDAI NAMCO Entertainment/ACE COMBAT 8/Saved/Config/Windows/Engine.ini
+保留已有其他配置，包括画质、Reflex、帧率限制等；不下载或替换游戏 DLL。
+原 Engine.ini 的完整字节和属性在本次 sessions/<会话>/config-backups/frame-generation-*/ 中备份。
+配置会设为只读，避免游戏覆盖；该用户配置会保留，退出 MOD 后不会自动撤销。
+如需停用，将 MOD 根目录 FrameGeneration.ini 中 r.Streamline.DLSSG.Enable 改为 0，再启动 MOD。
+如需完整恢复个人 Engine.ini，使用备份文件，并参考 backup.json 中的 OriginalAttributes 恢复原属性。
+帧生成是否实际生效取决于游戏插件、显卡与驱动支持；尚未进行实机帧率验证。

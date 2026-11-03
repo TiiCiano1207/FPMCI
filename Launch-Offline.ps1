@@ -22,7 +22,7 @@ $statePath=Join-Path $root 'active-session.json'
 . (Join-Path $root 'MouseAim-Settings.ps1')
 . (Join-Path $root 'Runtime-Settings.ps1')
 Assert-AC8NoLinks $w64
-$expectedHash='51510E2A520565DBE81FB0D569E95CD4393077ACAAA859371489B80B8128829F'
+$expectedHashes=@('51510E2A520565DBE81FB0D569E95CD4393077ACAAA859371489B80B8128829F','3E47FD42858D1F2B81E59D7F57394A014C0EB6AAF4C02EE3DA351B6A42936BE2')
 $operation=$null
 if(!$CheckOnly){$operation=Enter-AC8Operation $gameRoot}
 try {
@@ -67,7 +67,7 @@ if($validation.deploymentAllowed -ne $true){throw 'Candidate is gated off. No ga
 if(Test-Path -LiteralPath $statePath){Stop-AC8Problem 'OLD_SESSION' '上一次运行尚未完成清理。' '正常关闭游戏后运行 Cleanup-Offline.cmd，再从 Steam 或 Start.cmd 启动。'}
 if(Get-Process -Name AceCombat8 -ErrorAction SilentlyContinue){throw 'Game is already running.'}
 if(!(Get-Process -Name steam -ErrorAction SilentlyContinue)){throw 'Start Steam first.'}
-if(!(Test-Path -LiteralPath $exe) -or (Get-AC8FileHash -LiteralPath $exe).Hash -ne $expectedHash){throw 'Game build mismatch. This candidate supports build 25201480 only.'}
+if(!(Test-Path -LiteralPath $exe) -or (Get-AC8FileHash -LiteralPath $exe).Hash -notin $expectedHashes){throw 'Game build mismatch. Supported builds: 25201480 and 26002268. Unknown executables are blocked.'}
 foreach($n in 'dwmapi.dll','ue4ss','steam_appid.txt'){
  if(Test-Path -LiteralPath (Join-Path $w64 $n)){Stop-AC8Problem 'LOADER_CONFLICT' "检测到已有加载器：$n" '请从 Steam 或 Start.cmd 进入恢复流程，或运行 Recover-Cleanup.cmd 核对归属后清理。'}
 }
@@ -126,8 +126,16 @@ try {
  Write-Host $banner.Title
  Write-Host $banner.Keys
  Write-Host ('FEATURES: mouse flight; missile mode='+$features.MissileMode)
+ # Frame generation is initialized before the game's renderer starts.
+ try {
+  . (Join-Path $root 'FrameGeneration.ps1')
+  $fg=Apply-AC8FrameGeneration -PackageRoot $root -BackupRoot (Join-Path $results 'config-backups')
+  Write-Host ('FRAME_GENERATION: DLSS-G configuration ready; actual support is determined by the game and GPU. Backup: '+$fg.Backup)
+ }catch{Write-Host ('帧生成配置未应用，继续原有 MOD 启动：'+$_.Exception.Message)}
  $stage='启动游戏'
- $game=Start-Process -FilePath $exe -WorkingDirectory $w64 -WindowStyle Normal -PassThru
+ $launchArguments=@('-eac-nop-loaded','-nosplash')
+ Write-Host ('GAME_ARGUMENTS: '+($launchArguments -join ' '))
+ $game=Start-Process -FilePath $exe -WorkingDirectory $w64 -ArgumentList $launchArguments -WindowStyle Normal -PassThru
  $state.PID=$game.Id
  Write-AC8Json $state $statePath
  # Observe this process and its log only; no game memory/object polling.

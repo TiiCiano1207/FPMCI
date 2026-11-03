@@ -19,8 +19,9 @@ namespace AC8Settings {
   public Dictionary<string,double> Values=new Dictionary<string,double>();
   public Dictionary<string,string> Keys=new Dictionary<string,string>();
   public string Color="#70FF90";
-  public ConfigState Copy(){return new ConfigState{Values=new Dictionary<string,double>(Values),Keys=new Dictionary<string,string>(Keys),Color=Color};}
-  public string Signature(){return string.Join("|",Values.OrderBy(x=>x.Key).Select(x=>x.Key+"="+x.Value.ToString("R",CultureInfo.InvariantCulture)))+";"+string.Join("|",Keys.OrderBy(x=>x.Key).Select(x=>x.Key+"="+x.Value))+";"+Color.ToUpperInvariant();}
+  public bool FrameGenerationEnabled;
+  public ConfigState Copy(){return new ConfigState{Values=new Dictionary<string,double>(Values),Keys=new Dictionary<string,string>(Keys),Color=Color,FrameGenerationEnabled=FrameGenerationEnabled};}
+  public string Signature(){return string.Join("|",Values.OrderBy(x=>x.Key).Select(x=>x.Key+"="+x.Value.ToString("R",CultureInfo.InvariantCulture)))+";"+string.Join("|",Keys.OrderBy(x=>x.Key).Select(x=>x.Key+"="+x.Value))+";"+Color.ToUpperInvariant()+";frame_generation="+(FrameGenerationEnabled?"1":"0");}
  }
  public sealed class ConfigStore {
   public static readonly Rule[] Rules={
@@ -51,7 +52,7 @@ namespace AC8Settings {
    new Rule("fov_third_person","机外 FOV",0,130,0)
   };
   public static readonly string[] FovTokens={"Cockpit","HUD","ThirdPerson"};
-  public static readonly string[] Files={"MouseAim-Settings.ini","Keybindings.ini","Hud-Style.ini","FOV.ini"};
+  public static readonly string[] Files={"MouseAim-Settings.ini","Keybindings.ini","Hud-Style.ini","FOV.ini","MissileGuidance.ini","FrameGeneration.ini"};
   public string Root;
   public List<ActionSpec> Actions=new List<ActionSpec>();
   public List<KeySpec> KeyChoices=new List<KeySpec>();
@@ -79,7 +80,7 @@ namespace AC8Settings {
   public ConfigState Defaults(){
    var s=new ConfigState();
    foreach(var r in Rules)s.Values[r.Key]=r.Default;
-   foreach(var r in FovRules)s.Values[r.Key]=r.Default;
+   foreach(var r in FovRules.Concat(Guidance.Rules))s.Values[r.Key]=r.Default;
    foreach(var a in Actions)s.Keys[a.Name]=a.Default;
    return s;
   }
@@ -130,12 +131,15 @@ namespace AC8Settings {
     }
     if(fovSeen.Count!=3)throw new FormatException("FOV 配置需要 Cockpit、HUD、ThirdPerson 三项。");
    }
+   if(data["MissileGuidance.ini"]!=null)Guidance.Parse(Text(data["MissileGuidance.ini"]),s);
+   s.FrameGenerationEnabled=FrameGeneration.Parse(Text(data["FrameGeneration.ini"]));
    // Normalize supported legacy control profiles in the same way as the launcher.
    if(s.Values["control_mode"]==1)s.Values["control_mode"]=0;
    if(new[]{2.0,4.0,5.0}.Contains(s.Values["control_mode"]))s.Values["control_mode"]=3;
    Validate(s);return s;
   }
   public void Validate(ConfigState s){
+   Guidance.Validate(s);
    foreach(var r in Rules){
     double v;
     if(!s.Values.TryGetValue(r.Key,out v)||double.IsNaN(v)||double.IsInfinity(v)||v<r.Min||v>r.Max||(r.Integer&&v!=Math.Floor(v)))
@@ -176,6 +180,10 @@ namespace AC8Settings {
    text=original["FOV.ini"]==null?"# Horizontal FOV; 0 keeps the original game FOV.\r\n":Text(original["FOV.ini"]);
    for(int i=0;i<3;i++)text=ReplaceValue(text,FovTokens[i],s.Values[FovRules[i].Key].ToString("0.###",CultureInfo.InvariantCulture));
    data["FOV.ini"]=Encode(text);
+   text=original["MissileGuidance.ini"]==null?"; Missile foresight; next MOD launch only. Range 0-1, up to 3 decimals.\r\n":Text(original["MissileGuidance.ini"]);
+   foreach(var g in Guidance.Specs)text=ReplaceValue(text,g.Token,s.Values[g.Key].ToString("0.###",CultureInfo.InvariantCulture));
+   data["MissileGuidance.ini"]=Encode(text);
+   data["FrameGeneration.ini"]=Encode(FrameGeneration.Serialize(Text(original["FrameGeneration.ini"]),s.FrameGenerationEnabled));
    return data;
   }
   static bool Same(byte[] a,byte[] b){return a==null?b==null:b!=null&&a.SequenceEqual(b);}
@@ -240,9 +248,10 @@ namespace AC8Settings {
    if(Files.All(f=>Same(original[f],now[f])))return false;
    var latest=Parse(now);
    // External changes win conflicts. Keep unrelated edits in the menu.
-   foreach(var r in Rules.Concat(FovRules))if(latest.Values[r.Key]!=State.Values[r.Key]||RuntimeTagChanged(r.Key,now))pending.Values[r.Key]=latest.Values[r.Key];
+   foreach(var r in Rules.Concat(FovRules).Concat(Guidance.Rules))if(latest.Values[r.Key]!=State.Values[r.Key]||RuntimeTagChanged(r.Key,now))pending.Values[r.Key]=latest.Values[r.Key];
    foreach(var a in Actions)if(latest.Keys[a.Name]!=State.Keys[a.Name])pending.Keys[a.Name]=latest.Keys[a.Name];
    if(!string.Equals(latest.Color,State.Color,StringComparison.OrdinalIgnoreCase))pending.Color=latest.Color;
+   if(latest.FrameGenerationEnabled!=State.FrameGenerationEnabled)pending.FrameGenerationEnabled=latest.FrameGenerationEnabled;
    original=now;State=latest;return true;
   }
   public void Save(ConfigState s){Validate(s);Commit(Serialize(s));}
@@ -257,7 +266,7 @@ namespace AC8Settings {
    var data=new Dictionary<string,byte[]>();
    foreach(string f in Files){
     string h;if(!manifest.TryGetValue(f,out h)){
-     if(f=="FOV.ini"){data[f]=original[f];continue;}
+     if(f=="FOV.ini"||f=="MissileGuidance.ini"||f=="FrameGeneration.ini"){data[f]=original[f];continue;}
      throw new InvalidOperationException("备份不完整："+f);
     }
     data[f]=h=="MISSING"?null:File.ReadAllBytes(Path.Combine(folder,f));
@@ -265,6 +274,6 @@ namespace AC8Settings {
    }
    Parse(data);Commit(data);
   }
-  public static Rule Find(string key){return Rules.Concat(FovRules).First(x=>x.Key==key);}
+  public static Rule Find(string key){return Rules.Concat(FovRules).Concat(Guidance.Rules).First(x=>x.Key==key);}
  }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -12,7 +12,7 @@ using Forms=System.Windows.Forms;
 namespace AC8Settings {
  public sealed partial class SettingsWindow {
   string gamePath="",steamPath="",missileMode="guidance",launchOption="";
-  bool busy;
+  bool busy,modDisabled;
   string[] gameCandidates=new string[0],steamCandidates=new string[0];
   TextBox gameInput,steamInput,optionInput,logInput;
   ComboBox featureInput;
@@ -24,6 +24,13 @@ namespace AC8Settings {
    ((CheckBox)Window.FindName("SteamLaunch")).IsChecked=savedSteamLaunch;
    string feature=ReadPackage("features.ini");
    missileMode=feature.Contains("missile_mode=none")?"none":feature.Contains("missile_mode=full")||feature.Contains("missile_enhancement=1")?"full":"guidance";
+  }
+  void RefreshHeader(){
+   ((TextBlock)Window.FindName("HeaderGame")).Text=File.Exists(Path.Combine(gamePath,"Game","Binaries","Win64","AceCombat8.exe"))?"已定位":"待定位";
+   modDisabled=File.Exists(Path.Combine(store.Root,"mod-disabled.flag"))||(File.Exists(Path.Combine(Path.GetDirectoryName(store.Root),"AC8-Managed-Packages.json"))&&File.Exists(Path.Combine(Path.GetDirectoryName(store.Root),"mod-disabled.flag")));
+   ((TextBlock)Window.FindName("HeaderMode")).Text=modDisabled?"已停用":"已启用";
+   ((TextBlock)Window.FindName("HeaderProfile")).Text=missileMode=="none"?"鼠标飞控":missileMode=="full"?"完整导弹强化":"仅比例引导";
+   ((TextBlock)Window.FindName("HeaderVersion")).Text=store.Version;
   }
   string ReadPackage(string name){string p=Path.Combine(store.Root,name);return File.Exists(p)?File.ReadAllText(p).Trim().Trim('\uFEFF'):"";}
   void CommitInstallFields(){
@@ -46,7 +53,7 @@ namespace AC8Settings {
    featureInput=new ComboBox{VerticalAlignment=VerticalAlignment.Center};
    foreach(string s in new[]{"飞控 + 仅比例引导","飞控 + 完整导弹强化","仅鼠标飞控"})featureInput.Items.Add(s);
    featureInput.SelectedIndex=Array.IndexOf(new[]{"guidance","full","none"},missileMode);
-   featureInput.SelectionChanged+=(s,e)=>{if(featureInput.SelectedIndex>=0)missileMode=new[]{"guidance","full","none"}[featureInput.SelectedIndex];};
+   featureInput.SelectionChanged+=(s,e)=>{if(featureInput.SelectedIndex>=0){missileMode=new[]{"guidance","full","none"}[featureInput.SelectedIndex];RefreshHeader();}};
    Grid.SetColumn(featureInput,1);row.Children.Add(featureInput);
 
    Section("Steam 启动选项","首次安装或移动 MOD 文件夹后：保存方案，再将下面这一行粘贴到 Steam → 游戏属性 → 启动选项。");
@@ -63,7 +70,7 @@ namespace AC8Settings {
    var input=new TextBox{Text=value,FontSize=12,MinHeight=40,VerticalAlignment=VerticalAlignment.Center};
    var browse=new Button{Content="浏览",Padding=new Thickness(11,7,11,7),Margin=new Thickness(8,0,0,0),FontSize=12};
    if(steam)steamInput=input;else gameInput=input;
-   input.TextChanged+=(s,e)=>{if(steam)steamPath=input.Text;else gamePath=input.Text;};
+   input.TextChanged+=(s,e)=>{if(steam)steamPath=input.Text;else gamePath=input.Text;RefreshHeader();};
    browse.Click+=(s,e)=>{
     if(steam){var dialog=new Microsoft.Win32.OpenFileDialog{Title="选择 steam.exe",Filter="Steam 程序|steam.exe",CheckFileExists=true};if(dialog.ShowDialog(Window)==true)input.Text=dialog.FileName;}
     else{using(var dialog=new Forms.FolderBrowserDialog{Description="选择游戏根目录或 Win64 文件夹",ShowNewFolderButton=false})if(dialog.ShowDialog()==Forms.DialogResult.OK)input.Text=dialog.SelectedPath;}
@@ -76,8 +83,7 @@ namespace AC8Settings {
    }
   }
   void MaintenancePage(){
-   bool disabled=File.Exists(Path.Combine(store.Root,"mod-disabled.flag"))||(File.Exists(Path.Combine(Path.GetDirectoryName(store.Root),"AC8-Managed-Packages.json"))&&File.Exists(Path.Combine(Path.GetDirectoryName(store.Root),"mod-disabled.flag")));
-   Section(disabled?"模组当前已停用":"模组当前已启用","只切换本整合包的启动模式，保留游戏原文件。");
+   Section(modDisabled?"模组当前已停用":"模组当前已启用","只切换本整合包的启动模式，保留游戏原文件。");
    Actions(ActionButton("启用模组",()=>RunOperation("Enable")),ActionButton("停用模组",()=>RunOperation("Disable")),ActionButton("检查原版启动条件",()=>RunOperation("CheckOriginal")));
    Note("启停前需退出游戏。原有检查会确认加载器归属与会话状态，不会删除未知 MOD 文件。");
    Section("清理与恢复","正常退出会自动清理；异常退出后，可在这里恢复。");

@@ -1,8 +1,8 @@
 {
-  "version": "1.0",
-  "status": "release-1.0",
-  "game_build": "25201480",
-  "game_sha256": "51510E2A520565DBE81FB0D569E95CD4393077ACAAA859371489B80B8128829F",
+  "version": "1.1.0",
+  "status": "ui-update",
+  "game_build": "26002268",
+  "game_sha256": "3E47FD42858D1F2B81E59D7F57394A014C0EB6AAF4C02EE3DA351B6A42936BE2",
   "steam_app_id": 2288340,
   "native_controller_version": "2.4.2 (WAR 13.8)",
   "functional_baseline": "2.4.1",
@@ -17,11 +17,32 @@
     "4": 3,
     "5": 3
   },
-  "native_sha256": "fd86e08a864f4d8e51e3e5adf3a8c85f5586ba4949b30d12fc001d9b276fd05e",
+  "native_sha256": "74d0ce3d786155c5b3f687e793b2eb7a0f932f7d083d53106ea2e68d3fe252a9",
   "local_customization": "Cockpit mouse control, aircraft-relative C head look, smooth camera roll return; release 1.0 launcher UI and persistent in-game preferences. Original flight calculations and online behavior retained.",
-  "settings_tool_version": "1.0",
+  "settings_tool_version": "1.1.0",
   "distribution": "external-resources",
-  "camera_patch_version": "2.2.1",
-  "release_version": "1.0",
-  "cleanup_patch": "FOV ownership recognition and GUI-selected path fix"
+  "camera_patch_version": "2.2.1-build26002268",
+  "release_version": "1.1.0",
+  "cleanup_patch": "FOV ownership recognition and GUI-selected path fix",
+  "frame_generation": "NVIDIA DLSS-G; two-key Engine.ini merge on MOD startup",
+  "missile_guidance_editor": "1.0-guidance-1; 13 numeric values, next-launch application",
+  "game_launch_arguments": [
+    "-eac-nop-loaded",
+    "-nosplash"
+  ],
+  "supported_builds": [
+    {
+      "build": "25201480",
+      "sha256": "51510E2A520565DBE81FB0D569E95CD4393077ACAAA859371489B80B8128829F"
+    },
+    {
+      "build": "26002268",
+      "sha256": "3E47FD42858D1F2B81E59D7F57394A014C0EB6AAF4C02EE3DA351B6A42936BE2"
+    }
+  ],
+  "frame_generation_editor": "Common settings switch, default off, saved for next launch",
+  "runtime_validation": "Static signatures and fixture tests only; updated-game session acceptance pending.",
+  "display_name": "FPMCI",
+  "display_full_name": "First-Person Mouse Control Integration",
+  "ui_style": "Single light aviation briefing theme; Big Shoulders headings; native WPF controls"
 }

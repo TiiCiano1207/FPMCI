@@ -1,54 +1,39 @@
-# AC8 Integrated Mod
+# FPMCI
 
-AC8 MOD **1.0 正式版**。提供鼠标飞控、驾驶舱鼠标控制、平滑镜头跟随、FOV 设置和外置图形启动器。
+**First-Person Mouse Control Integration · 第一人称鼠标操控整合**
 
-## 下载
+ACE COMBAT 8 的鼠标飞控、驾驶舱平滑镜头与外置设置启动器。A mouse-flight-control, cockpit camera and settings integration for ACE COMBAT 8.
 
-前往 [Releases](https://github.com/TiiCiano1207/AC8-Integrated-Mod/releases/latest)，下载 **AC8Workbench-1.0-external.zip**。
-同时提供 SHA256 校验文件，可核对下载包是否完整。
+## 下载与安装 / Download & install
 
-GitHub 自动生成的 Source code 压缩包是源代码；游玩请下载完整 MOD 安装包。
+从 [Releases](https://github.com/TiiCiano1207/FPMCI/releases/latest) 下载 **FPMCI-1.1.0.zip** 和对应 SHA256 校验文件。GitHub 的 Source code 压缩包仅包含源码。
 
-## 安装
+1. 将完整包解压到游戏目录外的新文件夹；保留 EXE 旁的全部资源。
+2. 运行 **AC8Workbench.exe**（界面显示 FPMCI），选择游戏与 Steam 位置及安装方案。
+3. 保存设置，按界面提示配置 Steam 启动选项，然后点击“开始游戏”。
 
-1. 将完整 ZIP 解压到游戏目录之外。
-2. 双击 **AC8Workbench.exe**，在“安装与启动”选择游戏位置、Steam 程序和安装方案。
-3. 点击左下角“保存设置”，首次使用或移动文件夹后，将生成的启动选项粘贴到 Steam 的游戏属性。
-4. 点击右下角“开始游戏”。默认勾选“从 Steam 启动”。
+Download the full release ZIP, extract it outside the game directory, run **AC8Workbench.exe**, select game/Steam paths and an installation mode, then save and follow the launch instructions. The EXE uses the accompanying external resources.
 
-EXE 是启动与设置入口。请保留旁边的 `payload`、`runtime`、配置与脚本文件，分享和复制时使用完整文件夹。
+旧公开版 1.0 用户请使用完整包；UI-only 补丁仅适用于 1.0.1 / 1.1.0。新包不包含个人安装路径。导弹引导初始数值为 MOD 预设，并非游戏原版数值。
 
-详细步骤见 [安装说明](docs/INSTALL.md)。本包适配 Windows x64、游戏 Build **25201480**；启动前会检查版本与文件归属。
+## 功能 / Features
 
-## 功能
+- 鼠标飞控、PEACE / WAR 模式与驾驶舱鼠标控制 / Mouse flight control and cockpit support.
+- C 自由观察、控制圆圈平滑镜头跟随、FOV 与准星设置 / Free look, smooth camera following, FOV and reticle settings.
+- DLSS 帧生成开关（默认关闭，需游戏与显卡支持）/ DLSS Frame Generation toggle (off by default; support required).
+- 13 项导弹比例引导数值编辑 / 13-value missile guidance editor.
+- 外置配置，保存后下次启动生效 / External configuration applied on next launch.
 
-- 鼠标飞控与 PEACE / WAR 模式。
-- 驾驶舱鼠标控制、C 自由观察和控制圆圈的平滑镜头跟随。
-- 驾驶舱、第一人称和机外 FOV 设置。
-- 准星颜色、显示设置、鼠标灵敏度与键位调整。
-- 三种安装方案：仅比例引导、完整导弹强化、仅鼠标飞控。
-- 游戏内实际调整过的灵敏度、观察缩放、飞控模式、机外相机模式和机头十字自动回写。
-- 模组启停、会话备份与恢复、运行记录和内置分析。
+## 1.1.0 更新 / Changes
 
-外部设置在下次启动应用。工具保持打开时会读取游戏内的设置变化，同项以游戏内调整为准，其他未保存的菜单调整保留。
+全新浅色航空简报界面、FPMCI 品牌与数值框显示修复；加入帧生成开关、导弹引导编辑以及 Build 26002268 镜头适配，保留 Build 25201480 支持。
 
-## 1.0 更新
+New aviation briefing UI and FPMCI branding; fixed clipped numeric fields; added frame generation and guidance controls plus Build 26002268 camera compatibility, retaining Build 25201480 support.
 
-- “开始游戏”为主按钮，“保存设置”和 Steam 启动勾选项位于左下角。
-- 帮助页精简为安装说明，移除界面主题切换和灵敏度快捷值。
-- 修复内置 FOV 模块被历史清理误判的问题，接受合法的个人 FOV 参数。
-- 清理和模组管理使用界面选择的游戏路径，支持安装方案尚未保存的情况。
+已完成离线签名、原生镜头/设置测试和界面检查；更新后游戏内实测验收仍待完成。Offline and UI checks passed; updated-game acceptance testing is pending. See [release notes](CHANGELOG-1.1.0.md).
 
-## 源码与修改
+## 源码与许可 / Source & license
 
-`source/SettingsTool` 是 WPF 启动器，`source/MouseAim` 是原生鼠标飞控与镜头模块；`source/CockpitFOV` 和 `source/SourceInit` 保留 FOV 与导弹初始化脚本。
-本仓库不把分析运行时和编译产物放入 Git；运行所需的完整外置资源随 Release 安装包提供。
+`source/SettingsTool` contains the WPF launcher; `source/MouseAim` contains native flight/camera code; `source/CockpitFOV` and `source/SourceInit` contain Lua modules. Binaries and runtime resources are distributed through Releases.
 
-修改 INI 无需重编 EXE。修改 MOD 资源后运行 `Update-Resources.cmd` 更新校验；C++ 修改需重编相应 DLL。
-
-## 署名与许可
-
-本项目基于 [FletcherMiya/AC8-Mouse-Aim](https://github.com/FletcherMiya/AC8-Mouse-Aim)，感谢原作者及上游贡献者。
-原始整合代码与修改沿用 [MIT 许可](LICENSE)；第三方材料保留各自许可和版权声明，见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) 与 `licenses`。
-
-这是独立维护的非官方社区项目，沿用原 MOD 的离线单人使用范围。
+基于 [FletcherMiya/AC8-Mouse-Aim](https://github.com/FletcherMiya/AC8-Mouse-Aim)，感谢原作者和上游贡献者。项目代码沿用 [MIT](LICENSE)，第三方材料见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。This is an unofficial community project for offline single-player use.
