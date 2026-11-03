@@ -81,6 +81,14 @@ function Invoke-AC8GuiAction {
   return [pscustomobject]@{Success=$true;Title='检查完成';Message=$message;GameRoot=$game;Option=$null}
  }
  if($running){Stop-AC8Problem 'GAME_RUNNING' '游戏正在运行。' '请正常退出游戏，等待清理完成后再操作。'}
+ # Resume only a recorded session, through the existing ownership/backup checks.
+ # Unrecorded loaders still require explicit recovery.
+ if($Action -in @('Start','StartDirect') -and $active){
+  Write-Host '正在恢复上次 MOD 会话，完成后继续启动。'
+  & (Join-Path $Root 'Launch-Offline.ps1') -CleanupOnly -GameRoot $game
+  $active=Test-Path -LiteralPath (Join-Path $Root 'active-session.json')
+  $residuals=@(Get-AC8Residuals $game)
+ }
  if($active -or $residuals.Count){Stop-AC8Problem 'LOADER_CONFLICT' '存在未完成会话或加载器残留。' '请先点击“备份并清理”，确认归属并完成清理后再操作。'}
  if($Action -eq 'Save'){
   Assert-AC8WriteAccess $Root

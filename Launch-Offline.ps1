@@ -21,6 +21,7 @@ $statePath=Join-Path $root 'active-session.json'
 . (Join-Path $root 'Cleanup-Core.ps1')
 . (Join-Path $root 'MouseAim-Settings.ps1')
 . (Join-Path $root 'Runtime-Settings.ps1')
+. (Join-Path $root 'Backup-Retention.ps1')
 Assert-AC8NoLinks $w64
 $expectedHashes=@('51510E2A520565DBE81FB0D569E95CD4393077ACAAA859371489B80B8128829F','3E47FD42858D1F2B81E59D7F57394A014C0EB6AAF4C02EE3DA351B6A42936BE2')
 $operation=$null
@@ -47,19 +48,28 @@ function Cleanup-Owned($state,[bool]$Analyze=$true) {
   $runtime=Join-Path $archive 'ue4ss'
   if(Test-Path -LiteralPath $runtime){
    try{Sync-AC8RuntimeSettings $root $runtime $state}catch{Write-Host ('游戏内设置同步未完成：'+$_.Exception.Message)}
-   Copy-Item -LiteralPath $runtime -Destination (Join-Path $state.Results 'runtime-copy') -Recurse -Force
+   # Preserve diagnostic inputs, not another copy of DLLs, textures and fonts.
+   foreach($file in Get-ChildItem -LiteralPath $runtime -File -Recurse | Where-Object {$_.Extension -in @('.csv','.jsonl','.log','.json','.ini','.txt')}){
+    $destination=Join-Path (Join-Path $state.Results 'runtime-copy') $file.FullName.Substring($runtime.Length+1)
+    New-Item -ItemType Directory -Path (Split-Path $destination) -Force | Out-Null
+    Copy-Item -LiteralPath $file.FullName -Destination $destination -Force
+   }
    $log=Join-Path $runtime 'UE4SS.log'
    if(Test-Path -LiteralPath $log){Copy-Item -LiteralPath $log -Destination (Join-Path $state.Results 'UE4SS.log') -Force}
   }
   $after=Get-SaveHashes
   ConvertTo-Json -InputObject $after | Set-Content -LiteralPath (Join-Path $state.Results 'save-hashes-after.json') -Encoding UTF8
+  $status=if($Analyze){'complete'}else{'failed'}
+  Write-AC8Json ([pscustomobject]@{Status=$status;Archive=$archive}) (Join-Path $state.Results 'session-status.json')
   if($Analyze){Invoke-AC8OptionalAnalysis $root $state.Results}
+  Invoke-AC8BackupRetention -PackageRoot $root
+  Optimize-AC8BackupFiles -PackageRoot $root
  }catch{Write-Host ('清理已完成，可选诊断未完成：'+$_.Exception.Message)}
 }
 
 if($CleanupOnly){
  if(!(Test-Path -LiteralPath $statePath)){$null=Invoke-AC8Cleanup -GameRoot $gameRoot -BackupRoot (Join-Path $root 'cleanup-backups');exit 0}
- Cleanup-Owned (Get-Content -LiteralPath $statePath -Raw -Encoding UTF8 | ConvertFrom-Json)
+ Cleanup-Owned (Get-Content -LiteralPath $statePath -Raw -Encoding UTF8 | ConvertFrom-Json) -Analyze:$false
  exit 0
 }
 $validation=Get-Content -LiteralPath (Join-Path $root 'validation-status.json') -Raw | ConvertFrom-Json
@@ -89,10 +99,10 @@ New-Item -ItemType Directory -Path $results -Force | Out-Null
 $saveRoot=Join-Path $env:LOCALAPPDATA 'BANDAI NAMCO Entertainment/ACE COMBAT 8/Saved/SaveGames'
 $saveBackup=Join-Path $results 'SaveGames-before'
 New-Item -ItemType Directory -Path $saveBackup -Force | Out-Null
-if(Test-Path -LiteralPath $saveRoot){Get-ChildItem -LiteralPath $saveRoot -File | ForEach-Object {Copy-Item -LiteralPath $_.FullName -Destination $saveBackup}}
+if(Test-Path -LiteralPath $saveRoot){Get-ChildItem -LiteralPath $saveRoot -File | Where-Object {$_.Name -notlike 'Replay*.sav'} | ForEach-Object {Copy-Item -LiteralPath $_.FullName -Destination $saveBackup}}
 $before=Get-SaveHashes
 ConvertTo-Json -InputObject $before | Set-Content -LiteralPath (Join-Path $results 'save-hashes-before.json') -Encoding UTF8
-foreach($saveFile in $before){if((Get-AC8FileHash -LiteralPath (Join-Path $saveBackup $saveFile.Name)).Hash -ne $saveFile.SHA256){throw 'Save backup verification failed.'}}
+foreach($saveFile in $before | Where-Object {$_.Name -notlike 'Replay*.sav'}){if((Get-AC8FileHash -LiteralPath (Join-Path $saveBackup $saveFile.Name)).Hash -ne $saveFile.SHA256){throw 'Save backup verification failed.'}}
 . (Join-Path $root 'MouseAim-Settings.ps1')
 $mouseSettings=Read-MouseSettings (Join-Path $root 'MouseAim-Settings.ini')
 . (Join-Path $root 'Feature-Settings.ps1')
@@ -132,10 +142,12 @@ try {
   $fg=Apply-AC8FrameGeneration -PackageRoot $root -BackupRoot (Join-Path $results 'config-backups')
   Write-Host ('FRAME_GENERATION: DLSS-G configuration ready; actual support is determined by the game and GPU. Backup: '+$fg.Backup)
  }catch{Write-Host ('帧生成配置未应用，继续原有 MOD 启动：'+$_.Exception.Message)}
+ Write-AC8Json ([pscustomobject]@{Stage='starting-game';MonitorPID=$PID;Time=[DateTime]::UtcNow.ToString('o')}) (Join-Path $results 'monitor-status.json')
  $stage='启动游戏'
  $launchArguments=@('-eac-nop-loaded','-nosplash')
  Write-Host ('GAME_ARGUMENTS: '+($launchArguments -join ' '))
  $game=Start-Process -FilePath $exe -WorkingDirectory $w64 -ArgumentList $launchArguments -WindowStyle Normal -PassThru
+ Write-AC8Json ([pscustomobject]@{Stage='monitoring';MonitorPID=$PID;GamePID=$game.Id;Time=[DateTime]::UtcNow.ToString('o')}) (Join-Path $results 'monitor-status.json')
  $state.PID=$game.Id
  Write-AC8Json $state $statePath
  # Observe this process and its log only; no game memory/object polling.
@@ -166,6 +178,7 @@ try {
  Show-AC8Problem $launchFailure $root $stage
  throw
 } finally {
+ Write-AC8Json ([pscustomobject]@{Stage='exit-handler';MonitorPID=$PID;Time=[DateTime]::UtcNow.ToString('o')}) (Join-Path $results 'monitor-status.json')
  if(!(Get-Process -Name AceCombat8 -ErrorAction SilentlyContinue)){
   try{
    Cleanup-Owned (Get-Content -LiteralPath $statePath -Raw -Encoding UTF8 | ConvertFrom-Json) -Analyze:(!$launchFailure)
