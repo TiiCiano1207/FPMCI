@@ -1,5 +1,6 @@
 ﻿. (Join-Path $PSScriptRoot 'Install-Common.ps1')
 . (Join-Path $PSScriptRoot 'Cleanup-Core.ps1')
+. (Join-Path $PSScriptRoot 'Backup-Retention.ps1')
 . (Join-Path $PSScriptRoot 'Feature-Settings.ps1')
 . (Join-Path $PSScriptRoot 'Discover-Installations.ps1')
 function Get-AC8GuiSavedPath([string]$Root,[string]$Name){
@@ -73,6 +74,7 @@ function Invoke-AC8GuiAction {
  $residuals=@(Get-AC8Residuals $game)
  $active=Test-Path -LiteralPath (Join-Path $Root 'active-session.json')
  $running=[bool](Get-Process -Name AceCombat8 -ErrorAction SilentlyContinue)
+ if(!$running -and $Action -in @('Check','Start','StartDirect')){Invoke-AC8BackupMaintenance -PackageRoot $Root -GameRoot $game}
  if($Action -eq 'Check'){
   $message='安装包与游戏版本校验通过。'
   if($running){$message+=' 游戏正在运行，请正常退出后再保存或清理。'}
@@ -103,13 +105,11 @@ function Invoke-AC8GuiAction {
   if(!(Get-Process -Name steam -ErrorAction SilentlyContinue)){Stop-AC8Problem 'STEAM_REQUIRED' '请先启动 Steam。' '直接启动仍需要 Steam 已运行。'}
   $console=Join-Path $Root 'Run-Console.ps1'
   $arguments='-NoProfile -ExecutionPolicy Bypass -File "'+$console+'" -Action Session'
-  $output=Join-Path $Root ('diagnostics/direct-session-'+(Get-Date -Format 'yyyyMMdd-HHmmss')+'-'+[guid]::NewGuid().ToString('N').Substring(0,6))
-  New-Item -ItemType Directory -Path (Split-Path $output) -Force | Out-Null
-  Start-Process -FilePath (Join-Path $PSHOME 'powershell.exe') -ArgumentList $arguments -WindowStyle Hidden -RedirectStandardOutput ($output+'.log') -RedirectStandardError ($output+'.error.log') | Out-Null
-  return [pscustomobject]@{Success=$true;Title='会话启动请求已发送';Message='正在执行版本检查、MOD 部署与游戏启动；启动日志保存在 diagnostics。';GameRoot=$game;Option=$null}
+  Start-Process -FilePath (Join-Path $PSHOME 'powershell.exe') -ArgumentList $arguments -WindowStyle Normal | Out-Null
+  return [pscustomobject]@{Success=$true;Title='会话启动请求已发送';Message='正在执行版本检查、MOD 部署与游戏启动；前台窗口实时显示日志，日志同时保存在 diagnostics。';GameRoot=$game;Option=$null}
  }
  & (Join-Path $Root 'Launch-AC8-via-Steam.ps1')
- return [pscustomobject]@{Success=$true;Title='已发送启动请求';Message='Steam 将执行云同步并启动游戏。是否成功进入游戏，请以 Steam 和游戏窗口为准；保留启动控制台以便退出后清理。';GameRoot=$game;Option=$null}
+ return [pscustomobject]@{Success=$true;Title='已发送启动请求';Message='Steam 将执行云同步并启动游戏。是否成功进入游戏，请以 Steam 和游戏窗口为准；启动窗口实时显示日志；关闭窗口后后台监控仍会等待退出并清理。';GameRoot=$game;Option=$null}
 }
 
 function Get-AC8GuiModeLabel([ValidateSet('guidance','full','none')][string]$Mode){

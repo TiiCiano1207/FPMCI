@@ -6,7 +6,7 @@ ACE COMBAT 8 的鼠标飞控、驾驶舱平滑镜头与外置设置启动器。A
 
 ## 下载与安装 / Download & install
 
-从 [Releases](https://github.com/TiiCiano1207/FPMCI/releases/latest) 下载 **FPMCI-1.1.1.zip** 和对应 SHA256 校验文件。GitHub 的 Source code 压缩包仅包含源码。
+从 [Releases](https://github.com/TiiCiano1207/FPMCI/releases/latest) 下载 **FPMCI-1.1.2.zip** 和对应 SHA256 校验文件。GitHub 的 Source code 压缩包仅包含源码。
 
 1. 将完整包解压到游戏目录外的新文件夹；保留 EXE 旁的全部资源。
 2. 运行 **AC8Workbench.exe**（界面显示 FPMCI），选择游戏与 Steam 位置及安装方案。
@@ -23,6 +23,12 @@ Download the full release ZIP, extract it outside the game directory, run **AC8W
 - DLSS 帧生成开关（默认关闭，需游戏与显卡支持）/ DLSS Frame Generation toggle (off by default; support required).
 - 13 项导弹比例引导数值编辑 / 13-value missile guidance editor.
 - 外置配置，保存后下次启动生效 / External configuration applied on next launch.
+
+## 1.1.2 更新 / Changes
+
+移除诊断与分析栏目；正常及异常备份同时限制数量和容量，日志共用不超过 16 MiB／MOD 本体大小的留存预算。活动会话受到保护，结束后纳入整理。日志生成逻辑不变。
+
+Remove Diagnostics & Analysis. Bound normal/exceptional backups and share a retained-log budget no larger than 16 MiB or the MOD payload. Active sessions are protected until completion. See [1.1.2 notes](CHANGELOG-1.1.2.md).
 
 ## 1.1.1 更新 / Changes
 

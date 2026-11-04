@@ -1,6 +1,7 @@
 ﻿param([string]$GameRoot,[switch]$RecoverHistorical,[switch]$CheckOnly,[switch]$Interactive)
 $ErrorActionPreference='Stop'
 . (Join-Path $PSScriptRoot 'Cleanup-Core.ps1')
+. (Join-Path $PSScriptRoot 'Backup-Retention.ps1')
 if(Test-Path -LiteralPath (Join-Path $PSScriptRoot 'Install-Common.ps1')){
  . (Join-Path $PSScriptRoot 'Install-Common.ps1')
  $GameRoot=Resolve-AC8PackageGameRoot $PSScriptRoot $GameRoot
@@ -25,4 +26,11 @@ if($state -and !$CheckOnly){
  Move-Item -LiteralPath $statePath -Destination (Join-Path $archive 'completed-session.json')
 }
 
-}finally{Exit-AC8Operation $operation}
+}finally{
+ try {
+  if(!$CheckOnly){
+   Invoke-AC8BackupRetention -PackageRoot $PSScriptRoot
+   Optimize-AC8BackupFiles -PackageRoot $PSScriptRoot
+  }
+ }finally{Exit-AC8Operation $operation}
+}

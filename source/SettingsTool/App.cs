@@ -33,8 +33,8 @@ namespace AC8Settings {
   List<Button> navButtons=new List<Button>();List<Editor> editors=new List<Editor>();
   List<Shape> reticle=new List<Shape>();Canvas previewCanvas;
   FontFamily numbers=new FontFamily("Consolas");
-  readonly string[] pageCodes={"FLIGHT CONTROL","CAMERA & VIEW","RETICLE & HUD","KEY BINDINGS","ADVANCED CONTROL","INSTALL & LAUNCH","MOD MANAGEMENT","DIAGNOSTICS","INSTALL GUIDE","MISSILE GUIDANCE"};
-  readonly string[] titles={"鼠标与飞控","相机与视角","准星与显示","键位设置","高级飞控","安装与启动","模组管理","诊断与分析","安装说明","导弹引导"};
+  readonly string[] pageCodes={"FLIGHT CONTROL","CAMERA & VIEW","RETICLE & HUD","KEY BINDINGS","ADVANCED CONTROL","INSTALL & LAUNCH","MOD MANAGEMENT","INSTALL GUIDE","MISSILE GUIDANCE"};
+  readonly string[] titles={"鼠标与飞控","相机与视角","准星与显示","键位设置","高级飞控","安装与启动","模组管理","安装说明","导弹引导"};
   readonly string[] descriptions={
    "调整操纵手感。这里显示的是当前配置，保存后下次启动生效。",
    "调整 FOV、驾驶舱平滑跟随，以及机外镜头的位置与响应。",
@@ -43,11 +43,10 @@ namespace AC8Settings {
    "用于细调飞控。保留默认值通常即可，调整前请阅读说明。",
    "定位游戏、选择安装内容，再开始游戏。",
    "切换模组启停，检查原版启动条件，恢复异常退出后的会话。",
-   "运行记录、完整性校验与内置运行数据分析。",
    "安装 MOD 并设置游戏启动方式。",
    "直接编辑导弹提前量参数，保存后下次启动游戏生效。"};
-  readonly string[] names={"安装与启动","常用设置","相机与视角","准星与显示","键位设置","高级飞控","导弹引导","模组管理","诊断与分析","安装说明"};
-  readonly int[] navPages={5,0,1,2,3,4,9,6,7,8};
+  readonly string[] names={"安装与启动","常用设置","相机与视角","准星与显示","键位设置","高级飞控","导弹引导","模组管理","安装说明"};
+  readonly int[] navPages={5,0,1,2,3,4,8,6,7};
   readonly string[] icons={
    "M2,4 L18,4 M2,10 L18,10 M2,16 L18,16 M7,1 L7,7 M14,7 L14,13 M9,13 L9,19",
    "M2,6 L13,6 L13,15 L2,15 Z M13,9 L19,6 L19,15 L13,12",
@@ -66,8 +65,8 @@ namespace AC8Settings {
    for(int i=0;i<names.Length;i++){
     int index=navPages[i];var b=new Button{Style=(Style)Window.FindResource("Nav"),HorizontalContentAlignment=HorizontalAlignment.Left};
     var grid=new Grid();grid.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(26)});grid.ColumnDefinitions.Add(new ColumnDefinition());
-    string[] extra={"M2,4 L18,4 L18,16 L2,16 Z M7,8 L14,10 L7,13 Z","M10,2 L18,6 L18,12 L10,18 L2,12 L2,6 Z M7,10 L9,12 L14,7","M3,17 L3,11 M8,17 L8,4 M13,17 L13,8 M18,17 L18,2","M3,3 L17,3 L17,17 L3,17 Z M8,7 C8,3 15,4 13,8 L10,11 M10,14 L10,15"};
-    var path=new System.Windows.Shapes.Path{Data=Geometry.Parse(index==9?"M2,18 L17,3 M9,3 L17,3 L17,11 M3,8 L3,14 L9,14":index==5?extra[0]:index==6?extra[1]:index==7?extra[2]:index==8?extra[3]:icons[index]),StrokeThickness=1.4,Width=18,Height=18,Stretch=Stretch.Uniform,VerticalAlignment=VerticalAlignment.Center};
+    string[] extra={"M2,4 L18,4 L18,16 L2,16 Z M7,8 L14,10 L7,13 Z","M10,2 L18,6 L18,12 L10,18 L2,12 L2,6 Z M7,10 L9,12 L14,7","M3,3 L17,3 L17,17 L3,17 Z M8,7 C8,3 15,4 13,8 L10,11 M10,14 L10,15"};
+    var path=new System.Windows.Shapes.Path{Data=Geometry.Parse(index==8?"M2,18 L17,3 M9,3 L17,3 L17,11 M3,8 L3,14 L9,14":index==5?extra[0]:index==6?extra[1]:index==7?extra[2]:icons[index]),StrokeThickness=1.4,Width=18,Height=18,Stretch=Stretch.Uniform,VerticalAlignment=VerticalAlignment.Center};
     path.SetBinding(Shape.StrokeProperty,new System.Windows.Data.Binding("Foreground"){Source=b});
     var label=new TextBlock{Text=names[i],Margin=new Thickness(10,0,0,0),VerticalAlignment=VerticalAlignment.Center};
     Grid.SetColumn(label,1);grid.Children.Add(path);grid.Children.Add(label);b.Content=grid;
@@ -201,15 +200,14 @@ namespace AC8Settings {
      break;
     case 5:InstallationPage();break;
     case 6:MaintenancePage();break;
-    case 7:DiagnosticsPage();break;
-    case 8:HelpPage();break;
-    case 9:GuidancePage();break;
+    case 7:HelpPage();break;
+    case 8:GuidancePage();break;
    }
    save.Visibility=Visibility.Visible;
-   ((StackPanel)Window.FindName("SettingTools")).Visibility=(page<=4||page==9)?Visibility.Visible:Visibility.Collapsed;
+   ((StackPanel)Window.FindName("SettingTools")).Visibility=(page<=4||page==8)?Visibility.Visible:Visibility.Collapsed;
    ((Button)Window.FindName("StartGame")).IsEnabled=!busy;
    ((CheckBox)Window.FindName("SteamLaunch")).IsEnabled=!busy;
-   ((TextBlock)Window.FindName("FooterHint")).Text=(page<=4||page==9)?"下次启动生效":"资源与原有校验流程已保留";
+   ((TextBlock)Window.FindName("FooterHint")).Text=(page<=4||page==8)?"下次启动生效":"资源与原有校验流程已保留";
    loading=false;UpdatePreview();save.IsEnabled=page==5||Dirty();restore.IsEnabled=store.LatestBackup()!=null;
   }
   void Section(string heading,string hint){
@@ -355,7 +353,7 @@ namespace AC8Settings {
   }
   void ResetPage(){
    if(store==null)return;
-   if(page==9){foreach(var g in Guidance.Specs)draft.Values[g.Key]=g.Preset;ShowPage(page);Changed();SetStatus("导弹引导已恢复 MOD 默认值 · 保存后下次启动生效");return;}
+   if(page==8){foreach(var g in Guidance.Specs)draft.Values[g.Key]=g.Preset;ShowPage(page);Changed();SetStatus("导弹引导已恢复 MOD 默认值 · 保存后下次启动生效");return;}
    if(page>4)return;var d=store.Defaults();
    string[][] sets={
     new[]{"sensitivity","free_look_zoom","control_mode","model_assist"},
@@ -408,7 +406,7 @@ namespace AC8Settings {
     var app=new Application{ShutdownMode=ShutdownMode.OnLastWindowClose};bool snapshot=args.Contains("--snapshot");
     if(!snapshot&&root!=null&&!RootOwnership.Acquire(root)){MessageBox.Show("这个 MOD 文件夹的工具已经打开。","AC8");return 0;}
     var ui=new SettingsWindow(root,snapshot);string page=Arg(args,"--page","install");
-    ui.ShowPage(page=="hud"?2:page=="camera"?1:page=="keys"?3:page=="advanced"?4:page=="common"?0:page=="manage"?6:page=="diagnostics"?7:page=="help"?8:page=="guidance"?9:5);
+    ui.ShowPage(page=="hud"?2:page=="camera"?1:page=="keys"?3:page=="advanced"?4:page=="common"?0:page=="manage"?6:page=="help"?7:page=="guidance"?8:5);
     if(snapshot)ui.Snapshot(Arg(args,"--snapshot",null),double.Parse(Arg(args,"--width","1080"),CultureInfo.InvariantCulture),double.Parse(Arg(args,"--height","760"),CultureInfo.InvariantCulture));
     else ui.Window.Show();
     try{app.Run();}finally{RootOwnership.Release();}return 0;

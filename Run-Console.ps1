@@ -1,12 +1,13 @@
-﻿param([ValidateSet('Setup','Start','Session','Cleanup','Recover','Features','Analyze')][string]$Action,[switch]$CheckOnly,[switch]$SessionWorker)
+﻿param([ValidateSet('Setup','Start','Session','Cleanup','Recover','Features','Analyze')][string]$Action,[switch]$CheckOnly,[switch]$SessionWorker,[string]$MonitorLogPrefix)
 $ErrorActionPreference='Stop'
 . (Join-Path $PSScriptRoot 'Install-Common.ps1')
+if($SessionWorker){$env:AC8_MONITOR_LOG_PREFIX=$MonitorLogPrefix}
 # The session monitor must outlive the visible Steam bridge console.
 if($Action -eq 'Session' -and !$CheckOnly -and !$SessionWorker){
  $logs=Join-Path $PSScriptRoot 'diagnostics'
  New-Item -ItemType Directory -Path $logs -Force | Out-Null
  $prefix=Join-Path $logs ('session-monitor-'+(Get-Date -Format 'yyyyMMdd-HHmmss')+'-'+[guid]::NewGuid().ToString('N').Substring(0,8))
- $arguments='-NoProfile -ExecutionPolicy Bypass -File "'+$PSCommandPath+'" -Action Session -SessionWorker'
+ $arguments='-NoProfile -ExecutionPolicy Bypass -File "'+$PSCommandPath+'" -Action Session -SessionWorker -MonitorLogPrefix "'+$prefix+'"'
  $worker=Start-Process -FilePath (Join-Path $PSHOME 'powershell.exe') -ArgumentList $arguments -WindowStyle Hidden -RedirectStandardOutput ($prefix+'.log') -RedirectStandardError ($prefix+'.error.log') -PassThru
  Write-Host 'MOD 会话监控已启动，下面实时显示启动与退出日志。'
  Write-Host ('日志位置：'+$prefix+'.log')

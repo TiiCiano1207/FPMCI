@@ -18,7 +18,7 @@ namespace AC8Settings {
    try{
     var app=new Application();var ui=new SettingsWindow(root,true);
     ui.Window.Left=-12000;ui.Window.Top=-12000;ui.Window.WindowStartupLocation=WindowStartupLocation.Manual;ui.Window.ShowInTaskbar=false;ui.Window.ShowActivated=false;ui.Window.Show();
-    ui.ShowPage(9);ui.Window.UpdateLayout();
+    ui.ShowPage(8);ui.Window.UpdateLayout();
     var guide=Children(ui.Window).OfType<TextBox>().Single(x=>AutomationProperties.GetName(x)=="MSL 引导数值");
     Check(guide.Text==new ConfigStore(root).State.Values["guidance_MSL"].ToString("0.000",System.Globalization.CultureInfo.InvariantCulture),"Guidance page did not load saved value.");
     string guidanceBefore=File.Exists(Path.Combine(root,"MissileGuidance.ini"))?File.ReadAllText(Path.Combine(root,"MissileGuidance.ini")):null;
@@ -73,7 +73,7 @@ namespace AC8Settings {
     stateChoice.IsDropDownOpen=false;
     var focusTrigger=startButton.Template.Triggers.OfType<Trigger>().Single(x=>x.Property==UIElement.IsKeyboardFocusedProperty);
     Check(focusTrigger.Setters.OfType<Setter>().Any(x=>x.TargetName=="Surface"&&x.Property==Border.BorderBrushProperty&&((SolidColorBrush)x.Value).Color==Color.FromRgb(0x14,0x2F,0x3C)),"Primary action lacks a contrasting keyboard focus border.");
-    ui.ShowPage(8);ui.Window.UpdateLayout();
+    ui.ShowPage(7);ui.Window.UpdateLayout();
     Check(Children((DependencyObject)ui.Window.FindName("PageBody")).OfType<Button>().Count()==1,"Help includes non-install actions.");
     ui.ShowPage(0);ui.Window.UpdateLayout();
     var input=Children(ui.Window).OfType<TextBox>().Single(x=>AutomationProperties.GetName(x)=="鼠标灵敏度数值");
@@ -116,7 +116,10 @@ namespace AC8Settings {
     Check(new ConfigStore(root).State.Values["guidance_MSL"]==1,"Detached guidance input replayed a stale value after changing pages.");
     Check(((TextBlock)ui.Window.FindName("ModName")).Text=="FPMCI","MOD name is missing.");
     Check(ui.Window.Title.Contains("FPMCI"),"Window title did not adopt FPMCI.");
-    foreach(int pageIndex in Enumerable.Range(0,10)){
+    var navigation=(StackPanel)ui.Window.FindName("Navigation");
+    Check(navigation.Children.Count==9,"Removed diagnostics page still occupies navigation.");
+    Check(!Children(navigation).OfType<TextBlock>().Any(x=>x.Text.Contains("诊断")||x.Text.Contains("分析")),"Diagnostics/analysis entry remains visible.");
+    foreach(int pageIndex in Enumerable.Range(0,9)){
      ui.ShowPage(pageIndex);ui.Window.UpdateLayout();
      foreach(var numeric in Children(ui.Window).OfType<TextBox>().Where(x=>AutomationProperties.GetName(x).EndsWith("数值")))CheckTextFits(numeric);
     }

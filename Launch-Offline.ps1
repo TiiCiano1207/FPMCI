@@ -25,9 +25,10 @@ $statePath=Join-Path $root 'active-session.json'
 Assert-AC8NoLinks $w64
 $expectedHashes=@('51510E2A520565DBE81FB0D569E95CD4393077ACAAA859371489B80B8128829F','3E47FD42858D1F2B81E59D7F57394A014C0EB6AAF4C02EE3DA351B6A42936BE2')
 $operation=$null
-if(!$CheckOnly){$operation=Enter-AC8Operation $gameRoot}
+$operation=Enter-AC8Operation $gameRoot
 try {
 Assert-ModEnabled
+Invoke-AC8BackupRetention -PackageRoot $root -Preview:$CheckOnly
 function Get-SaveHashes {
  $save=Join-Path $env:LOCALAPPDATA 'BANDAI NAMCO Entertainment/ACE COMBAT 8/Saved/SaveGames'
  if(!(Test-Path -LiteralPath $save)){return @()}
@@ -45,6 +46,8 @@ function Cleanup-Owned($state,[bool]$Analyze=$true) {
   $sessionsPath=[IO.Path]::GetFullPath((Join-Path $root 'sessions'))+[IO.Path]::DirectorySeparatorChar
   if(!$resultsPath.StartsWith($sessionsPath,[StringComparison]::OrdinalIgnoreCase)){throw 'Session results path escaped this package; diagnostics skipped.'}
   New-Item -ItemType Directory -Path $state.Results -Force | Out-Null
+  $status=if($Analyze){'complete'}else{'failed'}
+  Write-AC8Json ([pscustomobject]@{Status=$status;Archive=$archive}) (Join-Path $state.Results 'session-status.json')
   $runtime=Join-Path $archive 'ue4ss'
   if(Test-Path -LiteralPath $runtime){
    try{Sync-AC8RuntimeSettings $root $runtime $state}catch{Write-Host ('游戏内设置同步未完成：'+$_.Exception.Message)}
@@ -59,11 +62,7 @@ function Cleanup-Owned($state,[bool]$Analyze=$true) {
   }
   $after=Get-SaveHashes
   ConvertTo-Json -InputObject $after | Set-Content -LiteralPath (Join-Path $state.Results 'save-hashes-after.json') -Encoding UTF8
-  $status=if($Analyze){'complete'}else{'failed'}
-  Write-AC8Json ([pscustomobject]@{Status=$status;Archive=$archive}) (Join-Path $state.Results 'session-status.json')
   if($Analyze){Invoke-AC8OptionalAnalysis $root $state.Results}
-  Invoke-AC8BackupRetention -PackageRoot $root
-  Optimize-AC8BackupFiles -PackageRoot $root
  }catch{Write-Host ('清理已完成，可选诊断未完成：'+$_.Exception.Message)}
 }
 
@@ -188,4 +187,11 @@ try {
  }else{Write-Host '游戏仍在运行，已保留加载器。正常退出后运行 Cleanup-Offline.cmd。'}
 }
 
-}finally{Exit-AC8Operation $operation}
+}finally{
+ try {
+  if(!$CheckOnly){
+   Invoke-AC8BackupRetention -PackageRoot $root
+   Optimize-AC8BackupFiles -PackageRoot $root
+  }
+ }finally{Exit-AC8Operation $operation}
+}

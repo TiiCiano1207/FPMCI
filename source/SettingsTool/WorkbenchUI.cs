@@ -94,13 +94,6 @@ namespace AC8Settings {
    Actions(ActionButton("打开清理备份",()=>OpenFolder("cleanup-backups")),ActionButton("打开设置备份",()=>OpenFolder("settings-backups")));
    Logs();
   }
-  void DiagnosticsPage(){
-   Section("运行记录","查看会话、错误诊断与日志，不需要重新启动游戏。");
-   Actions(ActionButton("打开运行记录",()=>OpenFolder("sessions")),ActionButton("打开诊断目录",()=>OpenFolder("diagnostics")),ActionButton("打开 MOD 文件夹",()=>OpenFolder("")));
-   Section("分析最近一次运行","已内置分析所需的 Python 与 NumPy；分析结果写入对应会话目录。");
-   Actions(ActionButton("分析最近一次运行",()=>RunOperation("Analyze"),true),ActionButton("校验安装包",()=>RunOperation("CheckPackage")));
-   Logs();
-  }
   void HelpPage(){
    Section("安装 MOD","将完整文件夹解压到游戏目录之外，双击 AC8Workbench.exe。");
    Note("1. 在“安装与启动”中选择游戏位置、Steam 程序和安装方案。\n2. 点击左下角“保存设置”。\n3. 首次使用或移动文件夹后，复制启动选项，粘贴到 Steam → 游戏属性 → 启动选项。\n4. 点击右下角“开始游戏”。游戏退出后会自动清理本次部署。");
@@ -137,7 +130,7 @@ namespace AC8Settings {
    bool steam=((CheckBox)Window.FindName("SteamLaunch")).IsChecked==true;
    if(action=="Start"&&!steam)action="StartDirect";
    var request=new OperationRequest{Action=action,Root=store.Root,GamePath=gamePath,SteamPath=steamPath,MissileMode=missileMode,ConfirmRecovery=confirm};
-   var labels=new Dictionary<string,string>{{"Discover","自动定位"},{"Check","环境检查"},{"Save","保存安装方案"},{"Start","开始游戏"},{"StartDirect","开始游戏"},{"Recover","历史残留清理"},{"Cleanup","会话清理"},{"Enable","启用模组"},{"Disable","停用模组"},{"CheckOriginal","原版启动检查"},{"Analyze","运行分析"},{"CheckPackage","安装包校验"}};
+   var labels=new Dictionary<string,string>{{"Discover","自动定位"},{"Check","环境检查"},{"Save","保存安装方案"},{"Start","开始游戏"},{"StartDirect","开始游戏"},{"Recover","历史残留清理"},{"Cleanup","会话清理"},{"Enable","启用模组"},{"Disable","停用模组"},{"CheckOriginal","原版启动检查"},{"CheckPackage","安装包校验"}};
    SetBusy(true);SetStatus("正在处理："+labels[action]+" · 完成前请勿关闭工具");
    try{
     if(action=="Start"||action=="StartDirect"){

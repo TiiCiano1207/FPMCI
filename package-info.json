@@ -1,6 +1,6 @@
 {
-  "version": "1.1.1",
-  "status": "session-maintenance-fix",
+  "version": "1.1.2",
+  "status": "bounded-backup-and-log-retention",
   "game_build": "26002268",
   "game_sha256": "3E47FD42858D1F2B81E59D7F57394A014C0EB6AAF4C02EE3DA351B6A42936BE2",
   "steam_app_id": 2288340,
@@ -19,10 +19,10 @@
   },
   "native_sha256": "74d0ce3d786155c5b3f687e793b2eb7a0f932f7d083d53106ea2e68d3fe252a9",
   "local_customization": "Cockpit mouse control, aircraft-relative C head look, smooth camera roll return; release 1.0 launcher UI and persistent in-game preferences. Original flight calculations and online behavior retained.",
-  "settings_tool_version": "1.1.1",
+  "settings_tool_version": "1.1.2",
   "distribution": "external-resources",
   "camera_patch_version": "2.2.1-build26002268",
-  "release_version": "1.1.1",
+  "release_version": "1.1.2",
   "cleanup_patch": "FOV ownership recognition and GUI-selected path fix",
   "frame_generation": "NVIDIA DLSS-G; two-key Engine.ini merge on MOD startup",
   "missile_guidance_editor": "1.0-guidance-1; 13 numeric values, next-launch application",
@@ -45,6 +45,8 @@
   "display_name": "FPMCI",
   "display_full_name": "First-Person Mouse Control Integration",
   "ui_style": "Single light aviation briefing theme; Big Shoulders headings; native WPF controls",
-  "backup_policy": "Keep 3 completed session/archive pairs; preserve interrupted/failed records; share identical immutable backup binaries via hard links; skip replay snapshots and full runtime copies.",
-  "session_monitor": "Detached hidden worker; persistent output/error and lifecycle logs. Trigger of historical monitor termination not established."
+  "backup_policy": "Inactive normal: 3 groups/1 GiB; failed, unfinished and orphan: 3 groups/512 MiB. Active/recovery data protected. Read-only duplicate links. Retention on launch, environment check, recovery and exit.",
+  "session_monitor": "Detached hidden worker; persistent output/error and lifecycle logs. Trigger of historical monitor termination not established.",
+  "log_policy": "Producers unchanged. Shared inactive-log retention: min(16 MiB, payload size), with 1 MiB reserved for 20 removal summaries. Active logs exempt until completion.",
+  "ui_diagnostics_page": false
 }

@@ -68,7 +68,7 @@ namespace AC8Settings {
    bool valid=true;
    Func<bool> commit=()=>{
     // Detached controls may lose focus after a page rebuild; never replay stale text.
-    if(loading||page!=9||!editors.Any(x=>object.ReferenceEquals(x.Input,input)))return true;
+    if(loading||page!=8||!editors.Any(x=>object.ReferenceEquals(x.Input,input)))return true;
     double v;valid=Regex.IsMatch(input.Text.Trim(),@"^[0-9]+(?:\.[0-9]{1,3})?$")&&double.TryParse(input.Text.Trim(),NumberStyles.AllowDecimalPoint,CultureInfo.InvariantCulture,out v);
     if(!valid||!double.TryParse(input.Text.Trim(),NumberStyles.AllowDecimalPoint,CultureInfo.InvariantCulture,out v)||!Guidance.Valid(v)){
      valid=false;input.BorderBrush=Brush("#AF3928");save.IsEnabled=true;SetStatus(g.Label+"：请输入 0–1，最多三位小数。",true);return false;

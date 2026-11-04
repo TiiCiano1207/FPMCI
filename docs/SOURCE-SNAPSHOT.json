@@ -1,8 +1,8 @@
 {
   "source_version": "2.4.2",
-  "snapshot_date": "2026-11-03",
+  "snapshot_date": "2026-11-04",
   "native_sha256": "74D0CE3D786155C5B3F687E793B2EB7A0F932F7D083D53106EA2E68D3FE252A9",
-  "note": "1.0.1 compatibility update: exact old/new executable hashes retained; new camera vtable/update/cache/actor getter independently resolved from PE and native registration table; native camera fixtures and settings/UI tests passed. Flight laws and other payload resources unchanged. Updated-game live validation, UE4SS/FOV and missile field baselines remain pending. FPMCI 1.1.0 UI redesign only; native resources unchanged.",
+  "note": "1.0.1 compatibility update: exact old/new executable hashes retained; new camera vtable/update/cache/actor getter independently resolved from PE and native registration table; native camera fixtures and settings/UI tests passed. Flight laws and other payload resources unchanged. Updated-game live validation, UE4SS/FOV and missile field baselines remain pending. FPMCI 1.1.0 UI redesign only; native resources unchanged. FPMCI 1.1.2: remove diagnostics page; bound inactive backups/logs; native controller and log producers unchanged. Isolated validation only.",
   "files": [
     {
       "path": "source/MouseAim/agility_tests.cpp",
@@ -634,7 +634,7 @@
     },
     {
       "path": "source/SettingsTool/App.cs",
-      "sha256": "2cebf371fad57eacefbab3644d7c4f7528a0fd1c3d6ec793e37581c6c6fe9e59"
+      "sha256": "475977de8f36dd767e5f817867c804e3d1d1f0359a5239f3086ddd20e6c872f5"
     },
     {
       "path": "source/SettingsTool/app.ico",
@@ -646,7 +646,7 @@
     },
     {
       "path": "source/SettingsTool/AssemblyInfo.cs",
-      "sha256": "676e84c90a264ef928e1bc041998ba0925ba8c6bf0f05bde8b6856f1b359ce7f"
+      "sha256": "85d93a97fe6e87925b7ea683472c786eb6c943ba99b23ed9921fb3b0caebd88d"
     },
     {
       "path": "source/SettingsTool/Bootstrap.xaml",
@@ -662,7 +662,7 @@
     },
     {
       "path": "source/SettingsTool/MainWindow.xaml",
-      "sha256": "b6b6a877a85c79161f83a2525779574687900fca14ed76892736a48a62cece6e"
+      "sha256": "7b1eff0bf8aa8ae7d08427cfa3c5ced9dff38b7cf79e9558e8f1252faadf5652"
     },
     {
       "path": "source/SettingsTool/Operations.cs",
@@ -678,7 +678,7 @@
     },
     {
       "path": "source/SettingsTool/SelfTest.cs",
-      "sha256": "3531cac0ca1c0ad86fe3b2329834aaba136d8391debced00fac3d0aad5f3730e"
+      "sha256": "008234dde3b37fdc165a2748cdb24a7b22e2db814085adcbbe69b0454afb12f1"
     },
     {
       "path": "source/SettingsTool/Settings.cs",
@@ -706,7 +706,7 @@
     },
     {
       "path": "source/SettingsTool/WorkbenchUI.cs",
-      "sha256": "52fe688604bcab05abdd93769937f286fff16e25e0ec72b3cbac01b7a92d2d3e"
+      "sha256": "02e0c1f1f4653fc4fd552d80051ddfd0339848f9180b4309168470a81151266e"
     },
     {
       "path": "source/SettingsTool/FrameGeneration.ps1",

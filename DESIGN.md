@@ -22,6 +22,8 @@ Normal setting rows reserve 270 units for controls, including a 104-unit numeric
 
 ## Verified scope
 
-Common settings rendered at 1160x860 and 980x720; installation, camera and guidance at 1160x860. Native tests cover all ten page layouts, numeric visibility, dropdown selection contrast, primary focus template, settings save/restore and conflict priority. No web detector applies to native WPF. Final independent visual review resolved its two interaction-state findings.
+Common settings rendered at 1160x860 and 980x720; installation, camera and guidance at 1160x860. Native tests cover all nine page layouts, numeric visibility, dropdown selection contrast, primary focus template, settings save/restore and conflict priority. No web detector applies to native WPF. Final independent visual review resolved its two interaction-state findings.
 
 Existing game payload, configuration, launch and cleanup behavior are retained. UI verification does not establish live game compatibility; the prior runtime-validation limitation remains.
+
+The diagnostics/analysis page was removed in 1.1.2 at the user's request. Installation and recovery pages retain their operation output and integrity checks.
