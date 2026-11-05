@@ -1,4 +1,6 @@
 local source=require('source_init')
+local propnav=require('propnav_bridge')
+local fuse=require('fuse.main')
 local config=require('config')
 local visuals
 if config.msl_visuals then
@@ -28,6 +30,10 @@ local function applyAt(reason)
   log('SOURCE_FAILED reason='..reason..' '..tostring(result.error)..' rollbackErrors='..tostring(#(result.rollbackErrors or{})))
   return
  end
+ local fuseOK,fuseError=pcall(fuse.start)
+ if not fuseOK then disabled=true;log('SOURCE_FAILED fuse='..tostring(fuseError));return end
+ local started,err=pcall(propnav.start)
+ if not started then disabled=true;log('SOURCE_FAILED propnav='..tostring(err));return end
  log('SOURCE_APPLIED mode='..(config.missile_mode or 'full')..' reason='..reason..' verified='..result.verified..' written='..result.written)
  if visuals then
   local ok,err=pcall(visuals.prepare)

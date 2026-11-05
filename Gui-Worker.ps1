@@ -1,4 +1,4 @@
-﻿param([string]$Action,[string]$Root,[string]$GamePath,[string]$SteamPath,[ValidateSet('guidance','full','none')][string]$MissileMode,[bool]$ConfirmRecovery=$false)
+﻿param([string]$Action,[string]$Root,[string]$GamePath,[string]$SteamPath,[ValidateSet('guidance','none')][string]$MissileMode,[bool]$ConfirmRecovery=$false)
 $ErrorActionPreference='Stop'
 try{
  . (Join-Path $PSScriptRoot 'Gui-Core.ps1')

@@ -1,3 +1,5 @@
+当前版本：FPMCI 1.1.7。详见 [完整更新说明](RELEASE-v1.1.7.md)。
+
 # FPMCI
 
 **First-Person Mouse Control Integration · 第一人称鼠标操控整合**
@@ -6,7 +8,7 @@ ACE COMBAT 8 的鼠标飞控、驾驶舱平滑镜头与外置设置启动器。A
 
 ## 下载与安装 / Download & install
 
-从 [Releases](https://github.com/TiiCiano1207/FPMCI/releases/latest) 下载 **FPMCI-1.1.2.zip** 和对应 SHA256 校验文件。GitHub 的 Source code 压缩包仅包含源码。
+从 [Releases](https://github.com/TiiCiano1207/FPMCI/releases/latest) 下载 **FPMCI-1.1.7.zip** 和对应 SHA256 校验文件。GitHub 的 Source code 压缩包仅包含源码。
 
 1. 将完整包解压到游戏目录外的新文件夹；保留 EXE 旁的全部资源。
 2. 运行 **AC8Workbench.exe**（界面显示 FPMCI），选择游戏与 Steam 位置及安装方案。
@@ -14,15 +16,21 @@ ACE COMBAT 8 的鼠标飞控、驾驶舱平滑镜头与外置设置启动器。A
 
 Download the full release ZIP, extract it outside the game directory, run **AC8Workbench.exe**, select game/Steam paths and an installation mode, then save and follow the launch instructions. The EXE uses the accompanying external resources.
 
-旧公开版 1.0 用户请使用完整包；UI-only 补丁仅适用于 1.0.1 / 1.1.0。新包不包含个人安装路径。导弹引导初始数值为 MOD 预设，并非游戏原版数值。
+升级请先结束旧会话，再将完整包解压到新文件夹，重新设置路径和 Steam 启动选项。不要覆盖活动会话。新包不包含个人安装路径；导弹引导初始数值为 MOD 预设，近炸增强默认关闭。
 
 ## 功能 / Features
 
 - 鼠标飞控、PEACE / WAR 模式与驾驶舱鼠标控制 / Mouse flight control and cockpit support.
 - C 自由观察、控制圆圈平滑镜头跟随、FOV 与准星设置 / Free look, smooth camera following, FOV and reticle settings.
 - DLSS 帧生成开关（默认关闭，需游戏与显卡支持）/ DLSS Frame Generation toggle (off by default; support required).
-- 13 项导弹比例引导数值编辑 / 13-value missile guidance editor.
+- 13 项比例引导与 11 类弹种独立近炸设置 / 13-value guidance editor and eleven per-type proximity-fuse controls.
 - 外置配置，保存后下次启动生效 / External configuration applied on next launch.
+
+## 1.1.7 更新 / Changes
+
+接入 PropNav 2.3.9；独立近炸参数和原版伤害参考；自由观察、手动注视和镜头回正修复；等待会话整理后继续启动。
+
+Integrate PropNav 2.3.9, per-type fuse controls and damage references; fix free-look/manual-focus/camera return and session-cleanup waiting. See [full release notes](RELEASE-v1.1.7.md).
 
 ## 1.1.2 更新 / Changes
 

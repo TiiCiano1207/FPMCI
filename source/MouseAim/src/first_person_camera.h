@@ -105,7 +105,10 @@ struct CockpitFollow {
  Angles step(uintptr_t new_manager,uintptr_t new_pawn,Angles native,Angles target,double dt,double response,Angles aircraft,bool looking){
   bool valid=std::isfinite(dt)&&dt>0&&dt<=.25;
   if(!active||manager!=new_manager||pawn!=new_pawn||!valid){reset();manager=new_manager;pawn=new_pawn;last=cockpit_angles(native,aircraft);previous_looking=looking;}
-  if(looking!=previous_looking){world.reset();head.reset();}
+  if(looking!=previous_looking){
+   world.reset();head.reset();
+   if(!looking){world.first=world.second=from(last);world.active=true;world.manager=new_manager;world.pawn=new_pawn;}
+  }
   Angles result;
   if(looking){
    auto local=head.step(new_manager,new_pawn,relative(last,aircraft),relative(target,aircraft),dt,response);

@@ -1,0 +1,375 @@
+{
+  "source": "source/SourceInit/Scripts/source_spec.lua before values",
+  "source_sha256": "a9d1ae602a0987c5131c2700ddf9137bf49ac1dce508ae6bd2de99000c020e00",
+  "current_game_live_validation": false,
+  "units": "Squared proximity radius is cm^2; explosion radius is cm. These fields are not proof of actual detonation behavior.",
+  "rows": {
+    "2AAM": [
+      {
+        "row": "BP_plwp_2aam_a0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      }
+    ],
+    "4AAM": [
+      {
+        "row": "BP_plwp_4aam_a0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      },
+      {
+        "row": "BP_plwp_4aam_f0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      }
+    ],
+    "6AAM": [
+      {
+        "row": "BP_plwp_6aam_a0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      },
+      {
+        "row": "BP_plwp_6aam_r0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      }
+    ],
+    "HCAA": [
+      {
+        "row": "BP_plwp_hcaa_a0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      },
+      {
+        "row": "BP_plwp_hcaa_f0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      },
+      {
+        "row": "BP_plwp_hcaa_j0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      },
+      {
+        "row": "BP_plwp_hcaa_r0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      },
+      {
+        "row": "BP_plwp_hcaa_r1",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      }
+    ],
+    "HPAA": [
+      {
+        "row": "BP_plwp_hpaa_a0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      },
+      {
+        "row": "BP_plwp_hpaa_j0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      },
+      {
+        "row": "BP_plwp_hpaa_r0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      }
+    ],
+    "HVAA": [
+      {
+        "row": "BP_plwp_hvaa_a0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      },
+      {
+        "row": "BP_plwp_hvaa_r0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      }
+    ],
+    "LAAM": [
+      {
+        "row": "BP_plwp_laam_a0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      },
+      {
+        "row": "BP_plwp_laam_e0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      },
+      {
+        "row": "BP_plwp_laam_r0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      }
+    ],
+    "MSL": [
+      {
+        "row": "BP_plwp_msl_a0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      },
+      {
+        "row": "BP_plwp_msl_a1",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      },
+      {
+        "row": "BP_plwp_msl_f0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      },
+      {
+        "row": "BP_plwp_msl_j0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      },
+      {
+        "row": "BP_plwp_msl_r0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      }
+    ],
+    "QAAM": [
+      {
+        "row": "BP_plwp_qaam_a0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      },
+      {
+        "row": "BP_plwp_qaam_r0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 0.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      }
+    ],
+    "SAAM": [
+      {
+        "row": "BP_plwp_saam_a0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 10000.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      },
+      {
+        "row": "BP_plwp_saam_r0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 10000.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      },
+      {
+        "row": "BP_plwp_saam_r1",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 10000.0,
+        "bShouldDetonateOnMiss": false,
+        "ExplosionRadius": 0.0,
+        "AreaOfEffectDamage": 0.0
+      }
+    ],
+    "SASM": [
+      {
+        "row": "BP_plwp_sasm_a0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 10000.0,
+        "bShouldDetonateOnMiss": true,
+        "ExplosionRadius": 5000.0,
+        "AreaOfEffectDamage": 30.0
+      },
+      {
+        "row": "BP_plwp_sasm_r0",
+        "ProximityFuseDuration": 0.0,
+        "ProximityFuseRadiusSquared": 10000.0,
+        "bShouldDetonateOnMiss": true,
+        "ExplosionRadius": 5000.0,
+        "AreaOfEffectDamage": 30.0
+      }
+    ],
+    "table:C.STORY": [
+      {
+        "row": "table:C.STORY",
+        "ProximityFuseMeters": 0,
+        "ExplosionRadiusMeters": 0,
+        "AreaOfEffectDamage": 0,
+        "bShouldDetonateOnMiss": false
+      }
+    ],
+    "table:EASY": [
+      {
+        "row": "table:EASY",
+        "ProximityFuseMeters": 0,
+        "ExplosionRadiusMeters": 0,
+        "AreaOfEffectDamage": 0,
+        "bShouldDetonateOnMiss": false
+      }
+    ]
+  },
+  "database_verification": {
+    "verified_on": "2026-11-05",
+    "source_index": "https://ac8-database.pages.dev/zh-hans/weapons/",
+    "source_steam_build": 26002268,
+    "scope": "Campaign single-munition blueprint base damage, before parts and target-type damage rates. Not live FPMCI gameplay validation.",
+    "weapons": {
+      "MSL": {
+        "direct_hit_damage": 40,
+        "source": "https://ac8-database.pages.dev/weapons/msl/"
+      },
+      "QAAM": {
+        "direct_hit_damage": 80,
+        "source": "https://ac8-database.pages.dev/weapons/qaam/"
+      },
+      "SAAM": {
+        "direct_hit_damage": 80,
+        "source": "https://ac8-database.pages.dev/weapons/saam/"
+      },
+      "2AAM": {
+        "direct_hit_damage": 60,
+        "source": "https://ac8-database.pages.dev/weapons/2aam/"
+      },
+      "4AAM": {
+        "direct_hit_damage": 80,
+        "source": "https://ac8-database.pages.dev/weapons/4aam/"
+      },
+      "6AAM": {
+        "direct_hit_damage": 80,
+        "source": "https://ac8-database.pages.dev/weapons/6aam/"
+      },
+      "HCAA": {
+        "direct_hit_damage": 60,
+        "source": "https://ac8-database.pages.dev/weapons/hcaa/"
+      },
+      "HPAA": {
+        "direct_hit_damage": 160,
+        "source": "https://ac8-database.pages.dev/weapons/hpaa/"
+      },
+      "HVAA": {
+        "direct_hit_damage": 80,
+        "source": "https://ac8-database.pages.dev/weapons/hvaa/"
+      },
+      "LAAM": {
+        "direct_hit_damage": 80,
+        "source": "https://ac8-database.pages.dev/weapons/laam/"
+      },
+      "SASM": {
+        "direct_hit_damage": 50,
+        "source": "https://ac8-database.pages.dev/weapons/sasm/"
+      }
+    },
+    "exceptions": {
+      "MSL": {
+        "story_direct_hit_damage": 56,
+        "pilot_direct_hit_damage": 40,
+        "other_difficulties_direct_hit_damage": 40,
+        "source": "https://ac8-database.pages.dev/weapons/msl/"
+      },
+      "QAAM": {
+        "campaign_direct_hit_damage": 80,
+        "online_direct_hit_damage": 60,
+        "displayed_mode": "campaign",
+        "source": "https://ac8-database.pages.dev/weapons/qaam/"
+      }
+    },
+    "sasm": {
+      "direct_hit_damage": 50,
+      "area_damage": 30,
+      "explosion_radius_m": 50,
+      "trigger_distance_m": null,
+      "trigger_distance_note": "Database does not publish an actual proximity trigger distance. Historical squared-radius field is retained in raw rows, not displayed as an actual trigger distance.",
+      "source": "https://ac8-database.pages.dev/weapons/sasm/"
+    },
+    "guidance_check": {
+      "QAAM": 0.4,
+      "SAAM": 0.1,
+      "STORY": 0.2,
+      "EASY": 0.1,
+      "result": "These four published HomingForesightAmount values match the existing original references. Other types are not explicitly published by the database; their existing recorded source_spec.lua zero baselines are retained."
+    },
+    "changes": [
+      "Fill all eleven direct-hit references; MSL 40 unchanged.",
+      "Keep verified SASM area damage 30 and explosion radius 50 m.",
+      "Remove historical 1 m squared-radius conversion from the UI reference; actual trigger distance is not published.",
+      "Preserve historical raw rows and all personal editable settings."
+    ]
+  }
+}

@@ -19,9 +19,9 @@ int main(){
  }
  body=basis(15,80,90);look.reset();view=body;look.step(true,aim,view,0,0,80,62,{},&body);
  auto right=look.step(true,aim,view,20,0,80,62,{},&body);
- assert(std::abs(dot(right,body.r)-std::sin(20*rad))<.00001f&&std::abs(dot(right,body.u))<.00001f);
+ assert(std::abs(dot(right,body.r)-std::sin(std::atan(20*rad*std::tan(40*rad)/std::tan(31*rad))))<.00001f&&std::abs(dot(right,body.u))<.00001f);
  auto up=look.step(true,aim,view,0,-10,80,62,{},&body);
- assert(std::abs(dot(up,body.u)-std::sin(10*rad))<.00001f&&difference(aim,original)<.00001f);
+ assert(std::abs(dot(up,body.u)-std::sin(std::atan(10*rad*std::tan(40*rad)/std::tan(31*rad))))<.00001f&&difference(aim,original)<.00001f);
  // Release discards its boundary delta and restores the same world flight goal.
  auto released=look.step(false,aim,view,1000,1000,80,62,{},&body);
  assert(difference(released,original)<.00001f&&difference(aim,original)<.00001f);
@@ -42,7 +42,7 @@ int main(){
  }
  auto before=output;auto flightGoal=smooth_view::cockpit_angles({-30,120,0},aircraft);
  output=camera.step(1,2,composed(aircraft,{0,0,0}),flightGoal,1./120,6,aircraft,false);
- assert(smooth_view::distance(smooth_view::from(before),smooth_view::from(output))<.0001);
+ assert(smooth_view::distance(smooth_view::from(before),smooth_view::from(output))>0.0001&&smooth_view::distance(smooth_view::from(before),smooth_view::from(output))<2);
  for(int tick=0;tick<240;++tick)output=camera.step(1,2,native,flightGoal,1./120,6,aircraft,false);
  assert(smooth_view::distance(smooth_view::from(output),smooth_view::from(flightGoal))<.001);
  camera.reset();assert(!camera.active&&!camera.head.active&&!camera.world.active);

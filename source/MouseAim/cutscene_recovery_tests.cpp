@@ -34,7 +34,7 @@ static uint64_t published(){return rate_publish_ok.load();}
 static bool snapshot_fresh(){HudFrame f;return read_hud_frame(f)&&f.pawn==P&&fixture_now-f.tick<250;}
 
 int main(){
- QueryPerformanceFrequency(&perf_frequency);
+ QueryPerformanceFrequency(&perf_frequency);native_camera_vtable_rva=0xC9D3160;
  manager.fill(0x5a);
  const auto base=reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr));
  *reinterpret_cast<uintptr_t*>(manager.data())=base+0xC9D3160;

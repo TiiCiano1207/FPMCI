@@ -31,7 +31,7 @@ bool receive_camera(uintptr_t manager,uintptr_t pawn,double p,double y,double r,
     camera_command={manager,pawn,p,y,r,GetTickCount64(),stock_view,follow_first_person};
     return true;
 }
-struct NativeCameraRig {uintptr_t pawn=0;flight::V local{-3000,0,600};bool calibrated=false;};
+struct NativeCameraRig {uintptr_t pawn=0;flight::V local{-3000,0,600};bool calibrated=false,was_manual=false,returning=false;};
 NativeCameraRig native_camera_rig;
 struct CameraSample {double actor[3]{},pov[6]{};float fov=0;};
 // Amplify only the game's own zoom excursion; preserve its hold threshold and timing.
@@ -55,6 +55,24 @@ struct NativeZoomEnvelope {
     }
 };
 NativeZoomEnvelope native_zoom;
+// Follow the live game FOV on release without jumping when the native zoom snaps back.
+struct OpticalReturn {
+ float tangent=0;bool previous_held=false,returning=false;
+ void reset(){tangent=0;previous_held=returning=false;}
+ float step(float wanted,bool held,float dt){
+  if(!std::isfinite(wanted)||wanted<5||wanted>170||!std::isfinite(dt)||dt<=0||dt>.25f){reset();return wanted;}
+  const float goal=std::tan(wanted*.5f*flight::rad);
+  if(previous_held&&!held)returning=true;
+  previous_held=held;
+  if(tangent<=0||held||!returning)tangent=goal;
+  else{
+   tangent+=(goal-tangent)*(1-std::exp(-12*dt));
+   if(std::abs(tangent-goal)<.00001f){tangent=goal;returning=false;}
+  }
+  return returning?2*std::atan(tangent)/flight::rad:wanted;
+ }
+};
+OpticalReturn optical_return;
 // Custom zoom keys cannot rely on the game's original RMB binding. Use a
 // bounded, smooth optical envelope; original RMB still uses NativeZoomEnvelope.
 struct CustomZoomEnvelope {
@@ -121,18 +139,25 @@ bool apply_native_camera(void* manager,const CameraCommand& cmd,int mode,CameraS
         }
         first_person_camera.reset();
         if(native_rig_reset_requested.exchange(false)||native_camera_rig.pawn!=cmd.pawn){
-            native_camera_rig={};native_camera_rig.pawn=cmd.pawn;native_zoom.reset();custom_zoom.reset();
+            native_camera_rig={};native_camera_rig.pawn=cmd.pawn;native_zoom.reset();custom_zoom.reset();optical_return.reset();
         }
         // Sample the game's framing before our override. Keep this local rig
         // fixed throughout C and its release grace period, so native focus/orbit
         // animation cannot move the pivot or zoom while we are looking around.
-        if(!manual_camera_active.load()){
+        const bool manual=manual_camera_active.load();
+        if(native_camera_rig.was_manual&&!manual)native_camera_rig.returning=true;
+        native_camera_rig.was_manual=manual;
+        if(!manual){
             auto original_axes=flight::basis(float(sample.pov[3]),float(sample.pov[4]),float(sample.pov[5]));
             flight::V delta{float(sample.pov[0]-sample.actor[0]),float(sample.pov[1]-sample.actor[1]),float(sample.pov[2]-sample.actor[2])};
             flight::V local{flight::dot(delta,original_axes.f),flight::dot(delta,original_axes.r),flight::dot(delta,original_axes.u)};
             if(local.x<-100&&flight::dot(local,local)<20000.f*20000.f){
                 if(!native_camera_rig.calibrated)log_line("NATIVE_CAMERA_RIG local_cm=(%.1f,%.1f,%.1f)",local.x,local.y,local.z);
-                native_camera_rig.local=local;native_camera_rig.calibrated=true;
+                if(native_camera_rig.returning){
+                    native_camera_rig.local=native_camera_rig.local+(local-native_camera_rig.local)*(1-std::exp(-12*dt));
+                    if(flight::dot(local-native_camera_rig.local,local-native_camera_rig.local)<.01f)native_camera_rig.returning=false;
+                }else native_camera_rig.local=local;
+                native_camera_rig.calibrated=true;
             }
         }
         auto axes=flight::basis(float(cmd.p),float(cmd.y),float(cmd.r));
@@ -149,7 +174,8 @@ bool apply_native_camera(void* manager,const CameraCommand& cmd,int mode,CameraS
         auto held=[](int key){return (GetAsyncKeyState(key)&0x8000)!=0;};
         const bool zooming=manual_camera_active.load()&&foreground_is_game()&&custom_keys::down(bindings,custom_keys::Action::FreeLook,held)&&custom_keys::down(bindings,custom_keys::Action::Zoom,held);
         const bool original_zoom_key=custom_keys::get(bindings,custom_keys::Action::Zoom)==VK_RBUTTON;
-        const float zoomed=original_zoom_key?native_zoom.step(sample.fov,free_look_zoom.load(),zooming):custom_zoom.step(sample.fov,free_look_zoom.load(),zooming,dt);
+        const float wanted_zoom=original_zoom_key?native_zoom.step(sample.fov,free_look_zoom.load(),zooming):custom_zoom.step(sample.fov,free_look_zoom.load(),zooming,dt);
+        const float zoomed=original_zoom_key?optical_return.step(wanted_zoom,zooming,dt):wanted_zoom;
         if(zoomed!=sample.fov){memcpy(static_cast<unsigned char*>(manager)+0x14D0,&zoomed,sizeof(float));sample.fov=zoomed;}
         return true;
     } __except(EXCEPTION_EXECUTE_HANDLER) { native_camera_reject=CAM_EXCEPTION; return false; }
@@ -183,7 +209,8 @@ void __fastcall update_native_camera(void* manager,float dt) {
     const ULONGLONG attempt_tick=GetTickCount64();
     if(native_camera_fault && attempt_tick-native_camera_retry_tick<native_camera_retry_ms) return;
     CameraSample sample;
-    if(!apply_native_camera(manager,cmd,camera_view_mode.load(),sample,dt)) {
+    if(target_gaze_active.load()){cmd.stock_view=true;cmd.follow_first_person=false;}
+    if(!apply_native_camera(manager,cmd,target_gaze_active.load()?2:camera_view_mode.load(),sample,dt)) {
         first_person_camera.reset();
         if(!native_camera_fault)log_line("native camera disabled: invalid live camera/aircraft data (%s); retrying every %llums",native_camera_reject_name(native_camera_reject),native_camera_retry_ms);
         native_camera_fault=true;native_camera_retry_tick=attempt_tick;++native_camera_rejects;native_camera_fail_reason=native_camera_reject;

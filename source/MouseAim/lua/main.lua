@@ -204,10 +204,12 @@ else
             assert(manager and manager:IsValid(),'Camera manager unavailable')
             local frame_time=pause_gameplay:GetRealTimeSeconds(pawn)
             local manual_held=manual_look_native()==1
-            local gazing,automatic_view,manual_view=gaze.update(pawn,frame_time,manual_held)
-            -- C uses the mod orbit. Native target-focus and scripted views
-            -- yield to the game; native focus is not a C-key gesture.
-            gazing=automatic_view or (gazing and not manual_view)
+            local gazing,automatic_view,manual_view,target_focus=gaze.update(pawn,frame_time,manual_held)
+            -- 1 suspends flight for forced views; 2 yields only the camera for manual focus.
+            -- Actual free-look input takes precedence over manual target focus.
+            local gaze_mode=automatic_view and 1 or
+                ((gazing and not manual_held) and (target_focus and 2 or 1) or 0)
+            gazing=gaze_mode~=0
             local camera = camera_rotation(manager, rotation)
             local camera_pitch = rotation_component(camera, "Pitch") or pitch
             local camera_yaw = rotation_component(camera, "Yaw") or yaw
@@ -231,7 +233,7 @@ else
                 or view_context:optional_bool(pawn,'bEnableWingInput',false)==false
                 or view_context:optional_bool(pawn,'bEnableMovmentInput',false)==false
             local eligible=not paused and not automatic_view and not cinematic
-                and (manual_view or gazing or (owned and not input_blocked))
+                and (manual_view or (owned and not input_blocked))
             local ready,center=view_context:update(address,controller:GetAddress(),eligible,dt,frame_time)
             if center then
                 aim_camera.restore()
@@ -241,7 +243,7 @@ else
             local accepted,selected_camera_mode=context_native(ready and 0 or 1,center and 1 or 0,manual_view and 1 or 0,view_name=="Cockpit" and 1 or 0)
             assert(accepted==1,'Native view context rejected')
             local on,target_pitch,target_yaw=frame_native(address,pitch,yaw,roll,
-                camera_pitch,camera_yaw,camera_roll,fov,ox,oy,oz,paused and 1 or 0,gazing and 1 or 0)
+                camera_pitch,camera_yaw,camera_roll,fov,ox,oy,oz,paused and 1 or 0,gaze_mode)
             assert(on~=nil,'Native frame rejected')
             local hmd,aim_pitch,aim_yaw,aspect=helmet_state()
             if hmd==1 and ready then
@@ -307,6 +309,7 @@ else
             local desired_camera
             if gazing then
                 aim_camera.seed(camera,rotation_component)
+                if gaze_mode==2 then desired_camera={pitch=camera_pitch,yaw=camera_yaw,roll=camera_roll}end
             elseif follow_first_person then
                 -- Send the live flight/head-look direction. Native post-update smooths
                 -- orientation every camera frame while retaining cockpit position/FOV.
@@ -324,7 +327,7 @@ else
             end
             if desired_camera then
                 assert(camera_native(manager:GetAddress(),address,
-                    desired_camera.pitch,desired_camera.yaw,desired_camera.roll,stock_view and 1 or 0,follow_first_person and 1 or 0)==1,'Camera command rejected')
+                    desired_camera.pitch,desired_camera.yaw,desired_camera.roll,(stock_view or gaze_mode==2) and 1 or 0,(follow_first_person and gaze_mode==0) and 1 or 0)==1,'Camera command rejected')
             else
                 camera_native(0,0,0,0,0,1,0)
             end

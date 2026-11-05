@@ -37,7 +37,8 @@ int main(){
   }
   mouse_delta.add(200,-100);
   if(independent)target_input_tick();else receive_pose(pose);
-  assert(std::abs(flight::yaw(free_look.local_direction)-45)<.002&&std::abs(flight::pitch(free_look.local_direction)-15)<.002);
+  auto expectedLocal=flight::move_world_target(retained,flight::basis(flight::pitch(retained),flight::yaw(retained),0),20,-10,80,config.mouse_reference_fov);
+  assert(flight::dot(free_look.local_direction,expectedLocal)>.999999f);
   assert(std::abs(target_pitch.load()+12)<.001&&std::abs(target_yaw.load()-110)<.001);
   key_c=false;mouse_delta.add(1000,1000);
   if(independent)target_input_tick();else receive_pose(pose);

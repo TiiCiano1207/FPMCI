@@ -166,7 +166,7 @@ int main(){
  float zoomed=*reinterpret_cast<float*>(manager.data()+0x14D0);assert(zoomed<nativeFov&&displayed.fov==zoomed&&view_fov==zoomed);
  for(size_t i=0;i<manager.size();++i)if(i<0x14A0||i>=0x14D4)assert(manager[i]==originalBytes[i]);
  fixture_c=fixture_rmb=false;manager=originalBytes;update_native_camera(manager.data(),.016f);
- assert(*reinterpret_cast<float*>(manager.data()+0x14D0)==fov);manual_camera_active=false;
+ float returningFov=*reinterpret_cast<float*>(manager.data()+0x14D0);assert(returningFov>zoomed&&returningFov<fov);manual_camera_active=false;
  // A suspended context cannot steer and cannot consume the pending one-shot centre.
  active=true;enabled=true;game_paused=false;gaze_active=false;context_suspended=true;transition_center_requested=true;
  target_pitch=60;target_yaw=-120;command_pitch=.8f;command_roll=.5f;command_yaw=.2f;
@@ -288,5 +288,40 @@ int main(){
 
 
 
+
+ // Manual gaze must retain both flight input paths; forced views still suspend them.
+ fixture_c=false;fixture_rmb=false;manual_camera_active=false;cockpit_view_active=false;
+ control_mode=0;active=enabled=running=true;game_paused=context_suspended=false;
+ aircraft=65536;recenter_requested=resume_center_requested=transition_center_requested=false;
+ double focusPose[13]={65536,0,0,0,0,0,0,62,0,0,0,0,2};
+ for(bool independent:{false,true}){
+  independent_mouse=independent;free_look.reset();target_pitch=target_yaw=0;mouse_delta.clear();
+  receive_pose(focusPose);assert(target_gaze_active&&!gaze_active);
+  mouse_delta.add(30,0);if(independent)target_input_tick();else receive_pose(focusPose);
+  assert(target_yaw.load()>1);const float retained=target_yaw.load();
+  focusPose[5]=45;receive_pose(focusPose);assert(std::abs(target_yaw.load()-retained)<.001);
+  focusPose[12]=1;receive_pose(focusPose);mouse_delta.add(100,0);
+  if(independent)target_input_tick();else receive_pose(focusPose);
+  assert(command_pitch==0&&command_yaw==0&&command_roll==0);
+  assert(std::abs(target_yaw.load()-retained)<.001);
+  focusPose[12]=2;focusPose[5]=0;receive_pose(focusPose);
+ }
+ // Manual focus samples the actual native final POV, without touching camera bytes.
+ manager=originalBytes;aircraft=command.pawn;pose_tick=GetTickCount64();target_gaze_active=true;gaze_active=false;
+ receive_camera(reinterpret_cast<uintptr_t>(manager.data()),command.pawn,0,0,0);
+ frame.pawn=command.pawn;frame.tick=GetTickCount64();stage_hud_frame(frame);
+ update_native_camera(manager.data(),.016f);
+ assert(memcmp(manager.data()+0x14A0,originalBytes.data()+0x14A0,48)==0);
+ assert(read_hud_frame(displayed));assert(std::abs(displayed.cy-float(originalPOV[4]))<.001);
+ target_gaze_active=false;
+ puts("PASS manual gaze: both input paths, world goal preserved during camera motion, forced-view suspension, native camera unchanged and final POV published");
+
+ for(int fps:{30,60,144}){
+  OpticalReturn lens;float start=lens.step(25,true,1.f/fps),last=start;
+  float released=lens.step(62,false,1.f/fps);assert(released>25&&released<62);
+  for(int i=0;i<fps*2;++i){float next=lens.step(62,false,1.f/fps);assert(next>=last&&next<=62.001);last=next;}
+  assert(std::abs(last-62)<.001);
+ }
+ puts("PASS optical release: native FOV discontinuity smoothed, monotonic recovery at 30/60/144 FPS");
  puts("PASS shared aircraft orbit, frozen native C rig and mouse-follow rotation, 36m geometry, 48-byte pose plus bounded C+RMB optical FOV zoom, HUD sync/release restoration, pending recenter, gaze return and view-switch target preservation.");
 }

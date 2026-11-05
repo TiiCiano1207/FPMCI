@@ -1,9 +1,21 @@
 {
   "source_version": "2.4.2",
-  "snapshot_date": "2026-11-04",
-  "native_sha256": "74D0CE3D786155C5B3F687E793B2EB7A0F932F7D083D53106EA2E68D3FE252A9",
-  "note": "1.0.1 compatibility update: exact old/new executable hashes retained; new camera vtable/update/cache/actor getter independently resolved from PE and native registration table; native camera fixtures and settings/UI tests passed. Flight laws and other payload resources unchanged. Updated-game live validation, UE4SS/FOV and missile field baselines remain pending. FPMCI 1.1.0 UI redesign only; native resources unchanged. FPMCI 1.1.2: remove diagnostics page; bound inactive backups/logs; native controller and log producers unchanged. Isolated validation only.",
+  "snapshot_date": "2026-11-05",
+  "native_sha256": "B74A1FDCB55832DD1B67BA93CB02BFE4B93DDABAEC7A3B152AEE6D31092362E8",
+  "note": "1.0.1 compatibility update: exact old/new executable hashes retained; new camera vtable/update/cache/actor getter independently resolved from PE and native registration table; native camera fixtures and settings/UI tests passed. Flight laws and other payload resources unchanged. Updated-game live validation, UE4SS/FOV and missile field baselines remain pending. FPMCI 1.1.0 UI redesign only; native resources unchanged. FPMCI 1.1.2: remove diagnostics page; bound inactive backups/logs; native controller and log producers unchanged. Isolated validation only. FPMCI 1.1.3 integrates supplied AC8PropNav 2.3.9 binary, not a local native rebuild; isolated integration only. FPMCI 1.1.4: instance-only proximity fuse, no shared-table/CDO writes; eleven UI switches; full preset retired. Live detonation/damage untested. FPMCI 1.1.5: independent per-type fuse values and source-backed vanilla references. Current-game live acceptance pending. FPMCI 1.1.6: shared FOV projection, manual-focus flight and continuous camera/FOV release; native isolated and Lua validation only. FPMCI 1.1.7: bounded GUI session-lock wait and refreshed post-wait state; isolated tests only.",
   "files": [
+    {
+      "path": "Backup-Retention.ps1",
+      "sha256": "0e6f7af91f76655d825f9805c079f883f0dfa5ee5966908dde616e54af5802ce"
+    },
+    {
+      "path": "Gui-Core.ps1",
+      "sha256": "a2ae0b380041c94cdc49e11b618206ae3c99b3db170c608ccf4cf328b9bff513"
+    },
+    {
+      "path": "PowerShell-Compat.ps1",
+      "sha256": "066e272eaf8d49c7ab1a950951483979ec5aab5bd404766bb98420a21221cf9a"
+    },
     {
       "path": "source/MouseAim/agility_tests.cpp",
       "sha256": "3ea8918a4b22e3c3d039ef8050b39f0e0bcfd45d7c8f27da57fb66688b4e7c66"
@@ -14,7 +26,7 @@
     },
     {
       "path": "source/MouseAim/camera_context_tests.cpp",
-      "sha256": "5ee00f6b53d519fe0d14cf946b317b753028cbe7b6bb7f4126673ca8d11cee16"
+      "sha256": "be638adf4a2f8e7f935bdefa9d39a01353bfbb4222021bd98d10819f2180efc3"
     },
     {
       "path": "source/MouseAim/camera_return_tests.cpp",
@@ -29,12 +41,16 @@
       "sha256": "ef496f7c0add18df06e1c86f8b315bce5459080c892eae9de0b5a4afad33a3bf"
     },
     {
+      "path": "source/MouseAim/check-fix.cmd",
+      "sha256": "d79a0b67c55638bcddf8d8a5c6888df2e4b90166d4cf86ecdd92c5731d8246ac"
+    },
+    {
       "path": "source/MouseAim/cockpit_input_tests.cpp",
-      "sha256": "5ce9bdb928203e655b7eaf5e9c640861453409ed6993785bd5a8470b6a0a581c"
+      "sha256": "d4dbcd093762eb147de350e025926b8047da9f6183f9e1e142e60275d9e24806"
     },
     {
       "path": "source/MouseAim/cockpit_local_tests.cpp",
-      "sha256": "3933dc3bffe866935bea71bf97f36fa94719a0120dd85b3f078648342984b43f"
+      "sha256": "603907395f83659d1da85f17ffa5b19230c51744f0748d613a826eac7f109c1f"
     },
     {
       "path": "source/MouseAim/control_timing_tests.cpp",
@@ -46,7 +62,7 @@
     },
     {
       "path": "source/MouseAim/cutscene_recovery_tests.cpp",
-      "sha256": "7b1e3eab29fd95e1c963322b9d75ba5504e730ddf4da91e7282ac875c5b6743e"
+      "sha256": "c9c155e7abb9e38a74ae032662675abd7585d299154fda7e73bbba9d95815742"
     },
     {
       "path": "source/MouseAim/first_person_camera_tests.cpp",
@@ -54,7 +70,7 @@
     },
     {
       "path": "source/MouseAim/first_person_context_tests.cpp",
-      "sha256": "879bba1a5b05d84e849f14f72d480e9fffc05dc3c23818a04068fb8cee0342a8"
+      "sha256": "45e6a687a19a87919fd2f7f20725325d5d505960ee5fb1f09bada8282fec0a39"
     },
     {
       "path": "source/MouseAim/fullmodel_tests.cpp",
@@ -83,6 +99,18 @@
     {
       "path": "source/MouseAim/hybrid_hud_tests.cpp",
       "sha256": "c0ec349d279abcde80e28c8eedd4fb3d5e9d5b442ce75566c3fda803c26ea26a"
+    },
+    {
+      "path": "source/MouseAim/include/LuaMadeSimple/Common.hpp",
+      "sha256": "8dc5f622ab43379da262f049d2e6045952d4452772012575194a4d2be2405f99"
+    },
+    {
+      "path": "source/MouseAim/include/LuaMadeSimple/LuaMadeSimple.hpp",
+      "sha256": "0d483a91b47a3b3012c8a8d1813526b1033018bcc28f5823d0adffa631cde610"
+    },
+    {
+      "path": "source/MouseAim/include/LuaMadeSimple/LuaObject.hpp",
+      "sha256": "4dc510bdb3bab76216509394e23d9fb47deaa68a15f6ec214cfc04c54337525c"
     },
     {
       "path": "source/MouseAim/include/lapi.h",
@@ -189,18 +217,6 @@
       "sha256": "fe3668187ef62817276fb2571a687d0c5e9d2874387185120b392400dd5590aa"
     },
     {
-      "path": "source/MouseAim/include/LuaMadeSimple/Common.hpp",
-      "sha256": "8dc5f622ab43379da262f049d2e6045952d4452772012575194a4d2be2405f99"
-    },
-    {
-      "path": "source/MouseAim/include/LuaMadeSimple/LuaMadeSimple.hpp",
-      "sha256": "0d483a91b47a3b3012c8a8d1813526b1033018bcc28f5823d0adffa631cde610"
-    },
-    {
-      "path": "source/MouseAim/include/LuaMadeSimple/LuaObject.hpp",
-      "sha256": "4dc510bdb3bab76216509394e23d9fb47deaa68a15f6ec214cfc04c54337525c"
-    },
-    {
       "path": "source/MouseAim/include/lundump.h",
       "sha256": "ec417be365310a5290c53df1ad3ab80c5cff234e6b49a0529869e2fe0fc6e303"
     },
@@ -213,12 +229,24 @@
       "sha256": "7f24db774a43ebb553e7d0e5eb5073d4565df1306ae59fe9cefa496c3f3fedd0"
     },
     {
+      "path": "source/MouseAim/input_projection_tests.cpp",
+      "sha256": "a1457d2c3d1cde8c25dc2b74d0e2b00ebaca08a23261b288ad604606707b4ce8"
+    },
+    {
       "path": "source/MouseAim/leveling_tests.cpp",
       "sha256": "55a75743c61655cf02a3b68681a23633fe87cd133e06d5b351866b1496eef278"
     },
     {
       "path": "source/MouseAim/lua/build_white_hud.py",
       "sha256": "9f6c80724e830cb10df5181d33561bc3e1753f63b482378f83281b4f92b18701"
+    },
+    {
+      "path": "source/MouseAim/lua/gaze.lua",
+      "sha256": "7791ebb5efe2a20f407be389d18a648cbeabbf27eadd88b8a50d5134be78bf11"
+    },
+    {
+      "path": "source/MouseAim/lua/main.lua",
+      "sha256": "229fe4b8aa515b45a7ae39ea5a997f390faec497f412462cd12028fd13c731a7"
     },
     {
       "path": "source/MouseAim/lua/make_reticles.py",
@@ -362,7 +390,7 @@
     },
     {
       "path": "source/MouseAim/src/first_person_camera.h",
-      "sha256": "a41c4a2f55846a608eb06a1bc85f0b269383f1eac9e1682698b891e3b924dc08"
+      "sha256": "8e069f68870bc0ba3aa362f0c91dac03dcca64618189085d3fc7a701a32c128f"
     },
     {
       "path": "source/MouseAim/src/flight_math.h",
@@ -370,7 +398,7 @@
     },
     {
       "path": "source/MouseAim/src/free_look.h",
-      "sha256": "8a07cf7ecd9066200196f3a8a22f279c0449689d50488f87a36f0bb81cb3b667"
+      "sha256": "ed1af71cfa61349d9db353de52f8fe77ffde79e63f7c768f740292dcd7b65843"
     },
     {
       "path": "source/MouseAim/src/full_model_runtime.h",
@@ -378,7 +406,7 @@
     },
     {
       "path": "source/MouseAim/src/gpu_hud_loop.h",
-      "sha256": "98e6a67cbb5ac2912d95ee5dfab6ecc052fd0461f4afb61f70661f4308ff3b5d"
+      "sha256": "36902041f3ba7c3e9d08822fa04ff6f8b2c9c65f9b92cd8d4816eb64e2651bb2"
     },
     {
       "path": "source/MouseAim/src/gpu_hud_renderer.h",
@@ -438,11 +466,11 @@
     },
     {
       "path": "source/MouseAim/src/mouse_aim.cpp",
-      "sha256": "34d978ba053057d1a2b90c39f93325c30c9f344cafa782ef92c8768f59d27260"
+      "sha256": "ee0a6b18661ba539026e0b0195219a6e5d26d06ed35c89b7be52a461348668d6"
     },
     {
       "path": "source/MouseAim/src/native_camera.h",
-      "sha256": "8b20a14a4e124a963fd237477cca3947e3e9d60b17876aef6e66498a7baf9618"
+      "sha256": "b1a84abfcf32f9532e8067b9ebed70ff648351bb39c5ce8c932059b91265db97"
     },
     {
       "path": "source/MouseAim/src/online_assist_runtime.h",
@@ -545,12 +573,12 @@
       "sha256": "983954f32f1a7e95771bc2ba3d80c992b568a5f71ea766ae6e223976367d93c1"
     },
     {
-      "path": "source/MouseAim/src/vendor/minhook/include/MinHook.h",
-      "sha256": "c3608e584bd9659aebdbb4c8c82585605989193623f240552d35c43311b3d31a"
-    },
-    {
       "path": "source/MouseAim/src/vendor/minhook/LICENSE.txt",
       "sha256": "4f21f857550d7be854da6ea5f2da4e6775ca4e3fbb535e4f3d961c47d0bf3335"
+    },
+    {
+      "path": "source/MouseAim/src/vendor/minhook/include/MinHook.h",
+      "sha256": "c3608e584bd9659aebdbb4c8c82585605989193623f240552d35c43311b3d31a"
     },
     {
       "path": "source/MouseAim/src/vendor/minhook/src/buffer.c",
@@ -634,31 +662,27 @@
     },
     {
       "path": "source/SettingsTool/App.cs",
-      "sha256": "475977de8f36dd767e5f817867c804e3d1d1f0359a5239f3086ddd20e6c872f5"
-    },
-    {
-      "path": "source/SettingsTool/app.ico",
-      "sha256": "b5222f87ac4a7104e2b0171d3a1ce0a9bd91f21f14dd3223a91c31ddb1042488"
-    },
-    {
-      "path": "source/SettingsTool/app.manifest",
-      "sha256": "2f7fbbe0f3d9a1ea06a45b2f8bfdbbc965c07964b6b9e4bfe0d0beeb97e99d95"
+      "sha256": "c0e1d65c4fc1e476b30f42e63a74f80ca02474ad4c7e3e4b97e5428954f46a35"
     },
     {
       "path": "source/SettingsTool/AssemblyInfo.cs",
-      "sha256": "85d93a97fe6e87925b7ea683472c786eb6c943ba99b23ed9921fb3b0caebd88d"
+      "sha256": "c4438841f5f2f3d5e2c404cbe8543ba6673d6025083d1404c67678e08c27c154"
     },
     {
       "path": "source/SettingsTool/Bootstrap.xaml",
       "sha256": "362814c20aca655783c5f5c92eb6ac15deb85f612530cb282b69150b1f690242"
     },
     {
-      "path": "source/SettingsTool/build.ps1",
-      "sha256": "a8f17b8b9be90b8b3340aa474cca5ebf018f9b1b62810a53e241238c3e23f542"
-    },
-    {
       "path": "source/SettingsTool/Bundle.cs",
       "sha256": "766ef45fa24276fb3f3153385c9e0be0ac4f78b38a41a783f7f0510443cc708e"
+    },
+    {
+      "path": "source/SettingsTool/FrameGeneration.cs",
+      "sha256": "5679206f68632856af854bededfe9f524a4d7d013b5597dd35a59b610744467d"
+    },
+    {
+      "path": "source/SettingsTool/FrameGeneration.ps1",
+      "sha256": "768b87365d87a796e698eae5f80cfff961710929484280c4f3e34108a12c119f"
     },
     {
       "path": "source/SettingsTool/MainWindow.xaml",
@@ -669,24 +693,16 @@
       "sha256": "0b545bf90beebc54e3b8d7df3677d57f07efe1393ece9a134b02d55b2bd7bb40"
     },
     {
-      "path": "source/SettingsTool/pack_bundle.py",
-      "sha256": "b7524db7ad6fda30c80c64ef235cdc0e35e40c913458572a557151ba90f85020"
-    },
-    {
       "path": "source/SettingsTool/Runtime-Settings.ps1",
       "sha256": "b31e61b7fe84aa7b2b70dd0bff636efcca7b4918512f8166ccf2ecece110ef4c"
     },
     {
       "path": "source/SettingsTool/SelfTest.cs",
-      "sha256": "008234dde3b37fdc165a2748cdb24a7b22e2db814085adcbbe69b0454afb12f1"
+      "sha256": "fccba25d95bb33c7145c6f906cd6f5a014cd501ee288537a7fa532fc8ef92bd0"
     },
     {
       "path": "source/SettingsTool/Settings.cs",
-      "sha256": "79756a48168dec2f8977c8dc330b616f8ac90ddded4b586b80d82c7a2aa3f47e"
-    },
-    {
-      "path": "source/SettingsTool/stage_external.py",
-      "sha256": "95ecf200418689e97fa68cd8a875641727638efde9d6a6314184f0b87428c0e8"
+      "sha256": "ee4e537b14800d43f805cf9f9f92ba112fcd14cdc24b4b8acb68d772b49856dc"
     },
     {
       "path": "source/SettingsTool/Update-Resources.cmd",
@@ -706,15 +722,43 @@
     },
     {
       "path": "source/SettingsTool/WorkbenchUI.cs",
-      "sha256": "02e0c1f1f4653fc4fd552d80051ddfd0339848f9180b4309168470a81151266e"
+      "sha256": "171befbbdbee7f798b01b0745a782f922e1161981e35ce4e85c94829ee976cb5"
     },
     {
-      "path": "source/SettingsTool/FrameGeneration.ps1",
-      "sha256": "768b87365d87a796e698eae5f80cfff961710929484280c4f3e34108a12c119f"
+      "path": "source/SettingsTool/app.ico",
+      "sha256": "b5222f87ac4a7104e2b0171d3a1ce0a9bd91f21f14dd3223a91c31ddb1042488"
     },
     {
-      "path": "source/SettingsTool/FrameGeneration.cs",
-      "sha256": "5679206f68632856af854bededfe9f524a4d7d013b5597dd35a59b610744467d"
+      "path": "source/SettingsTool/app.manifest",
+      "sha256": "2f7fbbe0f3d9a1ea06a45b2f8bfdbbc965c07964b6b9e4bfe0d0beeb97e99d95"
+    },
+    {
+      "path": "source/SettingsTool/build.ps1",
+      "sha256": "a8f17b8b9be90b8b3340aa474cca5ebf018f9b1b62810a53e241238c3e23f542"
+    },
+    {
+      "path": "source/SettingsTool/pack_bundle.py",
+      "sha256": "b7524db7ad6fda30c80c64ef235cdc0e35e40c913458572a557151ba90f85020"
+    },
+    {
+      "path": "source/SettingsTool/stage_external.py",
+      "sha256": "95ecf200418689e97fa68cd8a875641727638efde9d6a6314184f0b87428c0e8"
+    },
+    {
+      "path": "source/SourceInit/Scripts/fuse/core.lua",
+      "sha256": "8596a24c96df0290fec75b1f118e08c4dabbf1ca3d0747f8fc1aad174f6ddae5"
+    },
+    {
+      "path": "source/SourceInit/Scripts/fuse/main.lua",
+      "sha256": "9cb2be6195fb041464942e5c8a69a425b70ff19e57f9fa42cff22d654d7e9558"
+    },
+    {
+      "path": "source/SourceInit/Scripts/fuse/settings.lua",
+      "sha256": "5a1dfa4b95fe86b82707dda61f122cc4dc20061ef69f6b5462b23dbcdcd906bd"
+    },
+    {
+      "path": "source/SourceInit/Scripts/propnav_bridge.lua",
+      "sha256": "dcc29352477df4364eac232fd85fff77b7191a009a122c5654837dfcdb4421a7"
     }
   ]
 }

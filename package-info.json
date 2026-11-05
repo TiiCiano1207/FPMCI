@@ -1,12 +1,12 @@
 {
-  "version": "1.1.2",
-  "status": "bounded-backup-and-log-retention",
+  "version": "1.1.7",
+  "status": "release-1.1.7",
   "game_build": "26002268",
   "game_sha256": "3E47FD42858D1F2B81E59D7F57394A014C0EB6AAF4C02EE3DA351B6A42936BE2",
   "steam_app_id": 2288340,
-  "native_controller_version": "2.4.2 (WAR 13.8)",
+  "native_controller_version": "2.4.3 (WAR 13.8; input/camera fixes)",
   "functional_baseline": "2.4.1",
-  "release_approved": false,
+  "release_approved": true,
   "control_modes": {
     "0": "PEACE (CLASSIC 2.0, unchanged)",
     "3": "WAR (exact AC8 rotation-law controller, WT-style structure; degraded mode WAR v11.1)"
@@ -17,12 +17,12 @@
     "4": 3,
     "5": 3
   },
-  "native_sha256": "74d0ce3d786155c5b3f687e793b2eb7a0f932f7d083d53106ea2e68d3fe252a9",
-  "local_customization": "Cockpit mouse control, aircraft-relative C head look, smooth camera roll return; release 1.0 launcher UI and persistent in-game preferences. Original flight calculations and online behavior retained.",
-  "settings_tool_version": "1.1.2",
+  "native_sha256": "b74a1fdcb55832dd1b67ba93cb02bfe4b93ddabaec7a3b152aee6d31092362e8",
+  "local_customization": "Cockpit mouse control, aircraft-relative C head look, smooth camera roll return; release 1.0 launcher UI and persistent in-game preferences. Original flight calculations and online behavior retained. FPMCI 1.1.6: shared FOV-aware head/ring input; manual focus retains flight; continuous camera/FOV return.",
+  "settings_tool_version": "1.1.5",
   "distribution": "external-resources",
   "camera_patch_version": "2.2.1-build26002268",
-  "release_version": "1.1.2",
+  "release_version": "1.1.7",
   "cleanup_patch": "FOV ownership recognition and GUI-selected path fix",
   "frame_generation": "NVIDIA DLSS-G; two-key Engine.ini merge on MOD startup",
   "missile_guidance_editor": "1.0-guidance-1; 13 numeric values, next-launch application",
@@ -48,5 +48,43 @@
   "backup_policy": "Inactive normal: 3 groups/1 GiB; failed, unfinished and orphan: 3 groups/512 MiB. Active/recovery data protected. Read-only duplicate links. Retention on launch, environment check, recovery and exit.",
   "session_monitor": "Detached hidden worker; persistent output/error and lifecycle logs. Trigger of historical monitor termination not established.",
   "log_policy": "Producers unchanged. Shared inactive-log retention: min(16 MiB, payload size), with 1 MiB reserved for 20 removal summaries. Active logs exempt until completion.",
-  "ui_diagnostics_page": false
+  "ui_diagnostics_page": false,
+  "propnav": {
+    "version": "2.3.9",
+    "sha256": "b4207774b64ce542cb9174708e25906cbcbbb785a9d361786753d30846bda222",
+    "validation": "Isolated integration only; live game validation pending.",
+    "configuration": "Existing 13 FPMCI values retained; 11 player types use native core, STORY/EASY use Lua; no enemy overrides."
+  },
+  "proximity_fuse": {
+    "upstream": "AC8ProximityFuse 0.0.2",
+    "implementation": "FPMCI instance-only adaptation",
+    "shared_table_writes": false,
+    "cdo_writes": false,
+    "default_enabled": false,
+    "validation": "Isolated Lua and WPF tests only; live detonation/damage acceptance pending.",
+    "per_missile_parameters": true,
+    "parameter_defaults": {
+      "trigger_m": 30,
+      "blast_m": 50,
+      "area_damage": 30
+    },
+    "parameter_ranges": {
+      "trigger_m": [
+        1,
+        200
+      ],
+      "blast_m": [
+        1,
+        500
+      ],
+      "area_damage": [
+        1,
+        500
+      ]
+    }
+  },
+  "missile_modes": [
+    "guidance",
+    "none"
+  ]
 }

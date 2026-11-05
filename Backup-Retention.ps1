@@ -1,4 +1,4 @@
-. (Join-Path $PSScriptRoot 'Cleanup-Core.ps1')
+﻿. (Join-Path $PSScriptRoot 'Cleanup-Core.ps1')
 
 function Read-AC8BackupRecord([string]$Path) {
  if(!(Test-Path -LiteralPath $Path -PathType Leaf)){return $null}
@@ -212,8 +212,8 @@ function Optimize-AC8BackupFiles {
  }
 }
 
-function Invoke-AC8BackupMaintenance([string]$PackageRoot,[string]$GameRoot,[switch]$Preview) {
- $operation=Enter-AC8Operation $GameRoot
+function Invoke-AC8BackupMaintenance([string]$PackageRoot,[string]$GameRoot,[switch]$Preview,[ValidateRange(0,60000)][int]$WaitMilliseconds=0) {
+ $operation=Enter-AC8Operation $GameRoot -WaitMilliseconds $WaitMilliseconds
  try {
   Invoke-AC8BackupRetention -PackageRoot $PackageRoot -Preview:$Preview
   if(!$Preview){Optimize-AC8BackupFiles -PackageRoot $PackageRoot}

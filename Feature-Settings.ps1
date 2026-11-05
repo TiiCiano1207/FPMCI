@@ -1,6 +1,6 @@
 ﻿. (Join-Path $PSScriptRoot 'MissileGuidance.ps1')
 function Read-FeatureSettings([string]$Path) {
- $mode='full';$seen=$false
+ $mode='guidance';$seen=$false
  if(Test-Path -LiteralPath $Path){
   foreach($line in Get-Content -LiteralPath $Path){
    $clean=$line.Trim();if(!$clean -or $clean.StartsWith(';')){continue}
@@ -11,13 +11,15 @@ function Read-FeatureSettings([string]$Path) {
    $seen=$true
   }
  }
- $count=switch($mode){'guidance'{32} 'full'{375} 'none'{0}}
+ if($mode -eq 'full'){$mode='guidance'}
+ $count=switch($mode){'guidance'{2} 'none'{0}}
  return [pscustomobject]@{MissileMode=$mode;MissileEnhancement=($mode -ne 'none');ExpectedFields=$count}
 }
 function Install-SelectedUE4SS([string]$PayloadRoot,[string]$Destination,$Features,[string]$GuidancePath=(Join-Path $PSScriptRoot 'MissileGuidance.ini')) {
  $source=[IO.Path]::GetFullPath($PayloadRoot);$target=[IO.Path]::GetFullPath($Destination)
  if($source.Equals($target,[StringComparison]::OrdinalIgnoreCase)){throw 'Payload and staging directory must differ.'}
- if($Features.MissileMode -notin @('none','guidance','full')){throw 'Invalid missile mode.'}
+ if($Features.MissileMode -notin @('none','guidance')){throw 'Invalid missile mode.'}
+ if($Features.MissileEnhancement -and (Test-Path -LiteralPath (Join-Path (Split-Path $target -Parent) 'AVRT.dll'))){throw 'AC8PropNav legacy AVRT.dll detected; resolve this conflict before launching. File retained.'}
  $guidance=$null
  if($Features.MissileEnhancement){$guidance=Read-AC8MissileGuidance $GuidancePath}
  if(@(Get-ChildItem -LiteralPath $target -Force | Where-Object Name -ne 'AC8SourceInit-owner.txt').Count){throw 'Staging directory is not empty; finish owned cleanup first.'}
@@ -31,6 +33,8 @@ function Install-SelectedUE4SS([string]$PayloadRoot,[string]$Destination,$Featur
  if($Features.MissileEnhancement){
   Copy-Item -LiteralPath (Join-Path $source 'Mods/AC8SourceInit') -Destination $mods -Recurse
   Write-AC8MissileGuidance $guidance (Join-Path $mods 'AC8SourceInit/Scripts/guidance_values.lua')
+  Write-AC8FuseSettings (Read-AC8FuseSettings (Join-Path (Split-Path $GuidancePath) 'ProximityFuse.ini')) (Join-Path $mods 'AC8SourceInit/Scripts/fuse/settings.lua')
+  Write-AC8PropNavSettings $guidance (Join-Path $mods 'AC8SourceInit/Scripts/propnav/AC8PropNav.ini')
   Set-Content -LiteralPath (Join-Path $mods 'AC8SourceInit/Scripts/installation_mode.lua') -Value ("return '"+$Features.MissileMode+"'") -Encoding ASCII
  }
  $lines=@('AC8MouseAim : 1','AC8CockpitFOV : 1')

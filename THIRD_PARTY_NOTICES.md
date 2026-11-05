@@ -39,3 +39,7 @@ This local integrated tool includes CPython and NumPy for the original analysis 
 Copyright 2019 The Big Shoulders Project Authors. SIL Open Font License 1.1.
 Source: https://github.com/google/fonts/tree/main/ofl/bigshoulders
 Static instance: weight 700 / optical size 36. License: ui/fpmci/fonts/OFL-BigShoulders.txt.
+
+## Supplied missile modules
+
+FPMCI 1.1.3+ bundles the supplied AC8PropNav 2.3.9 native DLL in release payloads. Its source was not supplied; upstream files, version and SHA256 are retained in docs/upstream/AC8PropNav-2.3.9. The instance-only fuse adaptation derives from the supplied AC8ProximityFuse 0.0.2 Lua files, retained in docs/upstream/AC8ProximityFuse-0.0.2. The root MIT license does not relicense third-party material.

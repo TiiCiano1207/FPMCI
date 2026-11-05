@@ -1,0 +1,56 @@
+AC8PropNav — MOD Launcher / UE4SS 版
+版本 2.3.9
+=======================================
+
+这是什么
+--------
+给 ACE COMBAT 8 的导弹加"提前量"（比例制导），并按型号调整锁定距离 / 转向速率 /
+导引头视场 / 存续时间。
+
+本版**只改加载方式**：核心由 UE4SS 的 Lua 脚本加载（Mod Launcher 的 Modded 模式），
+不再使用 AVRT.dll 代理宿主。功能与 AVRT 版相同，**默认 ini 配置未改动**。
+
+v2.3.9：适配 **2026-11-02 的游戏更新**（新版 exe）；功能与用法都不变。
+从 2.3.8 升级：关游戏后覆盖 `Scripts\AC8PropNav.dll` 即可，**不用动 ini**。
+
+
+依赖
+----
+· 需要已安装 ACE8 Mod Launcher（或任何带 UE4SS 3.0.x 的安装）。
+· 只能【离线 / 单人】玩：在线（EAC 开启）时 UE4SS 本身不会加载，本 mod 也不生效。
+
+
+安装
+----
+方式一（推荐）：把本压缩包拖进 Launcher 窗口（Mods 页 → Add mods）。
+方式二（手动）：把包里的 AC8PropNav 文件夹整个放到
+      <游戏>\Game\Binaries\Win64\ue4ss\Mods\
+
+解压后目录应为：
+      ...\ue4ss\Mods\AC8PropNav\enabled.txt
+      ...\ue4ss\Mods\AC8PropNav\Scripts\main.lua
+      ...\ue4ss\Mods\AC8PropNav\Scripts\AC8PropNav.dll
+      ...\ue4ss\Mods\AC8PropNav\Scripts\AC8PropNav.ini
+
+★ 不要与 AVRT 版（2.3.7 及更早版本、Win64 下的 AVRT.dll）同时安装 ——
+  两种装法请二选一。本版核心检测到旧代理宿主时会拒绝重复启动，并在日志里写明。
+
+
+配置 / 日志
+-----------
+      ...\ue4ss\Mods\AC8PropNav\Scripts\AC8PropNav.ini      配置（默认值未改动）
+      ...\ue4ss\Mods\AC8PropNav\Scripts\AC8PropNav.log      运行日志
+      ...\ue4ss\Mods\AC8PropNav\Scripts\AC8PropNav.key.log  关键诊断（不轮转）
+
+改 ini 存盘后几秒内生效（与原版一致）；锁定距离（LockonRange）改完要**切一次武器**才生效。
+
+
+卸载
+----
+删掉 ue4ss\Mods\AC8PropNav 整个文件夹即可（不会留下其它文件）。
+
+
+兼容性
+------
+· 本 mod 不修改任何游戏本体文件；游戏更新后可能失效，日志里会说明原因。
+· 与其它 UE4SS 脚本 mod 共存；Launcher 的 Unmodded 模式会把整个 ue4ss 移走 ⇒ 在线不加载。

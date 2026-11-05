@@ -17,15 +17,17 @@ struct FreeLook {
             }
             dx=dy=0;
         }
-        if (held && relative) {
-            const float p=std::clamp(pitch(local_direction)-dy,-89.0f,89.0f);
-            local_direction=basis(p,yaw(local_direction)+dx,0).f;
-            direction=with_body(*body);return direction;
-        }
         if (held) {
-            // World-up yaw and bounded pitch give an orbit without pole flips.
-            const float p=std::clamp(pitch(direction)-dy,-89.0f,89.0f);
-            direction=basis(p,yaw(direction)+dx,0).f;
+            // Match the ring's screen-space/FOV conversion around the current head direction.
+            V current=relative?local_direction:direction;
+            const float p=pitch(current);
+            const float scale=std::tan(std::clamp(fov,15.f,150.f)*.5f*rad)/std::tan(std::clamp(reference_fov,30.f,150.f)*.5f*rad);
+            const float dp=std::clamp(-std::atan(dy*rad*scale)/rad,-89.f-p,89.f-p);
+            dy=-std::tan(dp*rad)/(rad*scale);
+            V moved=move_world_target(current,basis(pitch(current),yaw(current),0),dx,dy,fov,reference_fov);
+            moved=basis(std::clamp(pitch(moved),-89.0f,89.0f),yaw(moved),0).f;
+            if(relative){local_direction=moved;direction=with_body(*body);}
+            else direction=moved;
             return direction;
         }
         aim=move_world_target(aim,view,dx,dy,fov,reference_fov,offset);

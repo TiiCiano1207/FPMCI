@@ -33,8 +33,8 @@ namespace AC8Settings {
   List<Button> navButtons=new List<Button>();List<Editor> editors=new List<Editor>();
   List<Shape> reticle=new List<Shape>();Canvas previewCanvas;
   FontFamily numbers=new FontFamily("Consolas");
-  readonly string[] pageCodes={"FLIGHT CONTROL","CAMERA & VIEW","RETICLE & HUD","KEY BINDINGS","ADVANCED CONTROL","INSTALL & LAUNCH","MOD MANAGEMENT","INSTALL GUIDE","MISSILE GUIDANCE"};
-  readonly string[] titles={"鼠标与飞控","相机与视角","准星与显示","键位设置","高级飞控","安装与启动","模组管理","安装说明","导弹引导"};
+  readonly string[] pageCodes={"FLIGHT CONTROL","CAMERA & VIEW","RETICLE & HUD","KEY BINDINGS","ADVANCED CONTROL","INSTALL & LAUNCH","MOD MANAGEMENT","INSTALL GUIDE","MISSILE ENHANCEMENT"};
+  readonly string[] titles={"鼠标与飞控","相机与视角","准星与显示","键位设置","高级飞控","安装与启动","模组管理","安装说明","导弹强化"};
   readonly string[] descriptions={
    "调整操纵手感。这里显示的是当前配置，保存后下次启动生效。",
    "调整 FOV、驾驶舱平滑跟随，以及机外镜头的位置与响应。",
@@ -44,8 +44,8 @@ namespace AC8Settings {
    "定位游戏、选择安装内容，再开始游戏。",
    "切换模组启停，检查原版启动条件，恢复异常退出后的会话。",
    "安装 MOD 并设置游戏启动方式。",
-   "直接编辑导弹提前量参数，保存后下次启动游戏生效。"};
-  readonly string[] names={"安装与启动","常用设置","相机与视角","准星与显示","键位设置","高级飞控","导弹引导","模组管理","安装说明"};
+   "按弹种调整比例引导和近炸增强，保存后下次启动生效。"};
+  readonly string[] names={"安装与启动","常用设置","相机与视角","准星与显示","键位设置","高级飞控","导弹强化","模组管理","安装说明"};
   readonly int[] navPages={5,0,1,2,3,4,8,6,7};
   readonly string[] icons={
    "M2,4 L18,4 M2,10 L18,10 M2,16 L18,16 M7,1 L7,7 M14,7 L14,13 M9,13 L9,19",
@@ -353,7 +353,7 @@ namespace AC8Settings {
   }
   void ResetPage(){
    if(store==null)return;
-   if(page==8){foreach(var g in Guidance.Specs)draft.Values[g.Key]=g.Preset;ShowPage(page);Changed();SetStatus("导弹引导已恢复 MOD 默认值 · 保存后下次启动生效");return;}
+   if(page==8){foreach(var r in Guidance.AllFuseRules)draft.Values[r.Key]=r.Default;foreach(var g in Guidance.Specs)draft.Values[g.Key]=g.Preset;ShowPage(page);Changed();SetStatus("导弹强化已恢复 MOD 默认值 · 保存后下次启动生效");return;}
    if(page>4)return;var d=store.Defaults();
    string[][] sets={
     new[]{"sensitivity","free_look_zoom","control_mode","model_assist"},

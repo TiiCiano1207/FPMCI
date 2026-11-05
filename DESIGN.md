@@ -27,3 +27,7 @@ Common settings rendered at 1160x860 and 980x720; installation, camera and guida
 Existing game payload, configuration, launch and cleanup behavior are retained. UI verification does not establish live game compatibility; the prior runtime-validation limitation remains.
 
 The diagnostics/analysis page was removed in 1.1.2 at the user's request. Installation and recovery pages retain their operation output and integrity checks.
+
+1.1.4: Missile Enhancement retains the existing WPF layout and adds eleven original/enhanced fuse switches. Two installation choices replace the full-enhancement preset.
+
+1.1.5: Source-backed vanilla fuse references sit above the per-type rows. Enabled fuse switches reveal three numeric fields; disabling retains values and collapses the panel.

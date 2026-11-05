@@ -131,7 +131,7 @@ std::atomic<bool> running{false};
 std::atomic<bool> enabled{true};
 std::atomic<bool> hud_enabled{true};
 std::atomic<bool> game_paused{false};
-std::atomic<bool> gaze_active{false};
+std::atomic<bool> gaze_active{false},target_gaze_active{false};
 std::atomic<bool> context_suspended{true},transition_center_requested{false};
 std::atomic<bool> manual_camera_active{false},native_rig_reset_requested{true};
 std::atomic<float> free_look_zoom{1.75f},effective_camera_fov{0};
@@ -684,7 +684,7 @@ void release_controls() {
     std::lock_guard<std::recursive_mutex> lock(target_mutex);
     control_goal_seen=false;
     full_model_new_flight=true;
-    active.store(false); aircraft.store(0);
+    active.store(false); aircraft.store(0);target_gaze_active=false;
     command_pitch.store(0); command_yaw.store(0); command_roll.store(0);
     mouse_delta.clear();
     previous_pose_tick=0; free_look.reset();
@@ -700,7 +700,10 @@ void receive_pose(const double (&v)[13]) {
     const float pitch=float(v[1]),yaw=float(v[2]),roll=float(v[3]);
     const float view_pitch=float(v[4]),view_yaw=float(v[5]),view_roll=float(v[6]);
     const float fov=float(v[7]),ox=float(v[8]),oy=float(v[9]),oz=float(v[10]);
-    const bool paused=v[11]!=0,gazing=v[12]!=0;
+    const bool paused=v[11]!=0,gazing=v[12]==1;
+    if(target_gaze_active.exchange(v[12]==2)!=(v[12]==2)){
+        ++hud_epoch;native_rig_reset_requested=true;first_person_camera.reset();
+    }
     if(gaze_active.exchange(gazing)!=gazing) {
         ++hud_epoch;
         mouse_delta.clear();
@@ -1163,7 +1166,7 @@ extern "C" __declspec(dllexport) int ac8_mouseaim_frame(lua_State* state) {
     LuaView lua(state); double v[13]{};
     if(!read_numbers(lua,v) || !live_pointer_number(v[0])) { release_controls(); return 0; }
     for(size_t i=1;i<11;++i) if(std::abs(v[i])>1e12) { release_controls(); return 0; }
-    if((v[11]!=0 && v[11]!=1) || (v[12]!=0 && v[12]!=1)) { release_controls(); return 0; }
+    if((v[11]!=0 && v[11]!=1) || (v[12]!=0 && v[12]!=1 && v[12]!=2)) { release_controls(); return 0; }
     receive_pose(v);
     const bool on=enabled.load() && !game_paused.load() && !gaze_active.load() && !context_suspended.load() && foreground_is_game();
     lua.set_number(on?1:0); lua.set_number(look_pitch.load()); lua.set_number(look_yaw.load());

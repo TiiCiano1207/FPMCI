@@ -23,20 +23,20 @@ namespace AC8Settings {
    savedSteamLaunch=ReadPackage("Launcher-Options.ini")!="steam_launch=0";
    ((CheckBox)Window.FindName("SteamLaunch")).IsChecked=savedSteamLaunch;
    string feature=ReadPackage("features.ini");
-   missileMode=feature.Contains("missile_mode=none")?"none":feature.Contains("missile_mode=full")||feature.Contains("missile_enhancement=1")?"full":"guidance";
+   missileMode=feature.Contains("missile_mode=none")||feature.Contains("missile_enhancement=0")?"none":"guidance";
   }
   void RefreshHeader(){
    ((TextBlock)Window.FindName("HeaderGame")).Text=File.Exists(Path.Combine(gamePath,"Game","Binaries","Win64","AceCombat8.exe"))?"已定位":"待定位";
    modDisabled=File.Exists(Path.Combine(store.Root,"mod-disabled.flag"))||(File.Exists(Path.Combine(Path.GetDirectoryName(store.Root),"AC8-Managed-Packages.json"))&&File.Exists(Path.Combine(Path.GetDirectoryName(store.Root),"mod-disabled.flag")));
    ((TextBlock)Window.FindName("HeaderMode")).Text=modDisabled?"已停用":"已启用";
-   ((TextBlock)Window.FindName("HeaderProfile")).Text=missileMode=="none"?"鼠标飞控":missileMode=="full"?"完整导弹强化":"仅比例引导";
+   ((TextBlock)Window.FindName("HeaderProfile")).Text=missileMode=="none"?"鼠标飞控":"导弹模块";
    ((TextBlock)Window.FindName("HeaderVersion")).Text=store.Version;
   }
   string ReadPackage(string name){string p=Path.Combine(store.Root,name);return File.Exists(p)?File.ReadAllText(p).Trim().Trim('\uFEFF'):"";}
   void CommitInstallFields(){
    if(gameInput!=null)gamePath=gameInput.Text;
    if(steamInput!=null)steamPath=steamInput.Text;
-   if(featureInput!=null&&featureInput.SelectedIndex>=0)missileMode=new[]{"guidance","full","none"}[featureInput.SelectedIndex];
+   if(featureInput!=null&&featureInput.SelectedIndex>=0)missileMode=new[]{"guidance","none"}[featureInput.SelectedIndex];
   }
   Button ActionButton(string label,Action click,bool primary=false){
    var b=new Button{Content=label,Padding=new Thickness(14,8,14,8),Margin=new Thickness(0,0,9,9),FontSize=12};
@@ -48,12 +48,12 @@ namespace AC8Settings {
    PathRow("游戏位置","可以选择游戏根目录、Win64 目录或 AceCombat8.exe。",gamePath,false);
    PathRow("Steam 程序","选择 Steam 安装目录中的 steam.exe。",steamPath,true);
    Actions(ActionButton("自动定位",()=>RunOperation("Discover")),ActionButton("检查环境",()=>RunOperation("Check")),ActionButton("校验安装包",()=>RunOperation("CheckPackage")));
-   Section("选择安装内容","三种方案都包含鼠标飞控；导弹模块按你的选择启用。");
-   var row=Row("安装方案","仅比例引导保留原版导弹性能；完整强化包含性能、近炸与外观。");
+   Section("选择安装内容","两种方案都包含鼠标飞控；导弹模块按你的选择启用。");
+   var row=Row("安装方案","导弹模块包含比例引导与按弹种选择的近炸增强。");
    featureInput=new ComboBox{VerticalAlignment=VerticalAlignment.Center};
-   foreach(string s in new[]{"飞控 + 仅比例引导","飞控 + 完整导弹强化","仅鼠标飞控"})featureInput.Items.Add(s);
-   featureInput.SelectedIndex=Array.IndexOf(new[]{"guidance","full","none"},missileMode);
-   featureInput.SelectionChanged+=(s,e)=>{if(featureInput.SelectedIndex>=0){missileMode=new[]{"guidance","full","none"}[featureInput.SelectedIndex];RefreshHeader();}};
+   foreach(string s in new[]{"飞控 + 导弹模块","仅鼠标飞控"})featureInput.Items.Add(s);
+   featureInput.SelectedIndex=Array.IndexOf(new[]{"guidance","none"},missileMode);
+   featureInput.SelectionChanged+=(s,e)=>{if(featureInput.SelectedIndex>=0){missileMode=new[]{"guidance","none"}[featureInput.SelectedIndex];RefreshHeader();}};
    Grid.SetColumn(featureInput,1);row.Children.Add(featureInput);
 
    Section("Steam 启动选项","首次安装或移动 MOD 文件夹后：保存方案，再将下面这一行粘贴到 Steam → 游戏属性 → 启动选项。");
@@ -136,7 +136,7 @@ namespace AC8Settings {
     if(action=="Start"||action=="StartDirect"){
      bool installationChanged=ReadPackage("game-path.txt")!=gamePath||ReadPackage("steam-path.txt")!=steamPath||string.IsNullOrWhiteSpace(launchOption);
      string storedFeature=ReadPackage("features.ini");
-     string storedMode=storedFeature.Contains("missile_mode=none")?"none":storedFeature.Contains("missile_mode=full")||storedFeature.Contains("missile_enhancement=1")?"full":"guidance";
+     string storedMode=storedFeature.Contains("missile_mode=none")||storedFeature.Contains("missile_enhancement=0")?"none":"guidance";
      if(installationChanged||storedMode!=missileMode){
       var installation=await Task.Run(()=>Operations.Run(new OperationRequest{Action="Save",Root=store.Root,GamePath=gamePath,SteamPath=steamPath,MissileMode=missileMode},null));
       if(!installation.Success){SetBusy(false);SetStatus(installation.Title+" · "+installation.Message,true);return;}

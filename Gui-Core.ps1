@@ -9,6 +9,7 @@ function Get-AC8GuiSavedPath([string]$Root,[string]$Name){
  return ''
 }
 function Save-AC8GuiSettings([string]$Root,[string]$GameRoot,[string]$Steam,[ValidateSet('guidance','full','none')][string]$MissileMode){
+ if($MissileMode -eq 'full'){$MissileMode='guidance'}
  $option='"'+(Join-Path $Root 'Start-AC8-From-Steam.cmd')+'" %command%'
  $values=[ordered]@{
   'game-path.txt'=$GameRoot
@@ -38,6 +39,7 @@ function Save-AC8GuiSettings([string]$Root,[string]$GameRoot,[string]$Steam,[Val
 }
 function Invoke-AC8GuiAction {
  param([ValidateSet('Discover','Check','Save','Start','StartDirect','Recover')][string]$Action,[string]$Root,[string]$GamePath,[string]$SteamPath,[ValidateSet('guidance','full','none')][string]$MissileMode,[bool]$ConfirmRecovery=$false)
+ if($MissileMode -eq 'full'){$MissileMode='guidance'}
  if($Action -eq 'Discover'){
   $found=Find-AC8Installations -GamePath $GamePath -SteamPath $SteamPath
   $result=[pscustomobject]@{Success=$true;Title='自动定位完成';Message='未能唯一确定位置。请选择下方候选，或使用浏览按钮手动选择。';GameRoot=$found.GamePath;SteamPath=$found.SteamPath;GameCandidates=@($found.GameCandidates);SteamCandidates=@($found.SteamCandidates);Option=$null}
@@ -74,7 +76,13 @@ function Invoke-AC8GuiAction {
  $residuals=@(Get-AC8Residuals $game)
  $active=Test-Path -LiteralPath (Join-Path $Root 'active-session.json')
  $running=[bool](Get-Process -Name AceCombat8 -ErrorAction SilentlyContinue)
- if(!$running -and $Action -in @('Check','Start','StartDirect')){Invoke-AC8BackupMaintenance -PackageRoot $Root -GameRoot $game}
+ if(!$running -and $Action -in @('Check','Start','StartDirect')){
+  Invoke-AC8BackupMaintenance -PackageRoot $Root -GameRoot $game -WaitMilliseconds 60000
+  # The previous monitor may have restored files and removed its session while we waited.
+  $active=Test-Path -LiteralPath (Join-Path $Root 'active-session.json')
+  $residuals=@(Get-AC8Residuals $game)
+  $running=[bool](Get-Process -Name AceCombat8 -ErrorAction SilentlyContinue)
+ }
  if($Action -eq 'Check'){
   $message='安装包与游戏版本校验通过。'
   if($running){$message+=' 游戏正在运行，请正常退出后再保存或清理。'}
@@ -113,16 +121,14 @@ function Invoke-AC8GuiAction {
 }
 
 function Get-AC8GuiModeLabel([ValidateSet('guidance','full','none')][string]$Mode){
- switch($Mode){'guidance'{return '飞控 + 仅比例引导'} 'full'{return '飞控 + 完整导弹强化'} 'none'{return '仅鼠标飞控'}}
+ switch($Mode){'guidance'{return '飞控 + 导弹模块'} 'full'{return '飞控 + 导弹模块'} 'none'{return '仅鼠标飞控'}}
 }
 function Get-AC8GuiSelectedMode($Controls){
  if($Controls.GuidanceOnly.IsChecked){return 'guidance'}
- if($Controls.FullInstall.IsChecked){return 'full'}
  if($Controls.MouseOnly.IsChecked){return 'none'}
- Stop-AC8Problem 'MODE_REQUIRED' '请选择一种安装范围。' '三种范围均包含鼠标飞控，请选择其中一项。'
+ Stop-AC8Problem 'MODE_REQUIRED' '请选择一种安装范围。' '两种范围均包含鼠标飞控，请选择其中一项。'
 }
 function Set-AC8GuiSelectedMode($Controls,[ValidateSet('guidance','full','none')][string]$Mode){
- $Controls.GuidanceOnly.IsChecked=($Mode -eq 'guidance')
- $Controls.FullInstall.IsChecked=($Mode -eq 'full')
+ $Controls.GuidanceOnly.IsChecked=($Mode -ne 'none')
  $Controls.MouseOnly.IsChecked=($Mode -eq 'none')
 }

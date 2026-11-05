@@ -4,16 +4,23 @@ foreach($ac8Module in @('Microsoft.PowerShell.Management','Microsoft.PowerShell.
  $ac8ModulePath=[IO.Path]::Combine($PSHOME,'Modules',$ac8Module,($ac8Module+'.psd1'))
  Import-Module -Name $ac8ModulePath -ErrorAction Stop
 }
-function Enter-AC8Operation([string]$GameRoot){
+function Enter-AC8Operation([string]$GameRoot,[ValidateRange(0,60000)][int]$WaitMilliseconds=0){
  $canonical=[IO.Path]::GetFullPath($GameRoot).TrimEnd('\','/').ToUpperInvariant()
  $sha=[Security.Cryptography.SHA256]::Create()
  try{$key=[BitConverter]::ToString($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes($canonical))).Replace('-','')}finally{$sha.Dispose()}
  $mutex=New-Object Threading.Mutex($false,('Local\AC8IntegratedSession-'+$key))
  $owned=$false
  try{
-  try{$owned=$mutex.WaitOne(0)}catch [Threading.AbandonedMutexException]{$owned=$true}
+  try{
+   $owned=$mutex.WaitOne(0)
+   if(!$owned -and $WaitMilliseconds -gt 0){
+    Write-Host '上次会话正在恢复或整理记录，等待完成后继续（最多 60 秒）……'
+    $owned=$mutex.WaitOne($WaitMilliseconds)
+   }
+  }catch [Threading.AbandonedMutexException]{$owned=$true}
   if(!$owned){
-   $failure=New-Object InvalidOperationException('Another AC8 session is starting or cleaning up. Wait for it to finish.')
+   $failure=New-Object InvalidOperationException('另一个 AC8 会话仍在启动、恢复或整理记录。')
+   $failure.Data['AC8Hint']='请稍候再试。本次没有重复启动游戏；不需要修改路径或权限，也不要删除活动会话记录。'
    $failure.Data['AC8Code']='SESSION_BUSY';throw $failure
   }
   return $mutex

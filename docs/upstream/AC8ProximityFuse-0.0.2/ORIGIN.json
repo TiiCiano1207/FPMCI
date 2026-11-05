@@ -1,0 +1,11 @@
+{
+  "supplied_files_sha256": {
+    "enabled.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "README.txt": "b33ea1e4b6114228d8f2bea5e5bf9afe72126d2d2b26d68f3c5fd7fa3d849f54",
+    "README_CN.txt": "adccbd16dc65d55823b15680c48a971fa127192442ea303966cd7175abfac194",
+    "settings.ini": "7088ef4b8ecc60cf175898688ba979cb0f2931c2b2ed3c64ac693da94e0ed6bc",
+    "Scripts/ini.lua": "04489649632ce77bad403aadfd016f9279fd7850f27be30941530b4d7ba792eb",
+    "Scripts/main.lua": "3357dd2e2d44fdad4a833b2dfe1770d9b2ab047ff7a3d6117137e96d0f1c1bbc"
+  },
+  "adaptation": "Instance-only main/core under source/SourceInit/Scripts/fuse. Upstream files are provenance copies, not runtime-loaded."
+}

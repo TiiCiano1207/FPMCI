@@ -12,7 +12,7 @@ static SHORT WINAPI fp_key(int){return 0;}
 #include <cassert>
 #include <cstdio>
 int main(){
- QueryPerformanceFrequency(&perf_frequency);
+ QueryPerformanceFrequency(&perf_frequency);native_camera_vtable_rva=0xC9D3160;
  alignas(8) std::array<unsigned char,0x300> pawn{},root{};
  alignas(8) std::array<unsigned char,0x1600> manager{};manager.fill(0x5a);
  *reinterpret_cast<uintptr_t*>(manager.data())=reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr))+0xC9D3160;

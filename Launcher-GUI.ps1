@@ -18,7 +18,7 @@ $window.Height=[Math]::Min($window.Height,[Math]::Max($window.MinHeight,$workAre
 $script:themeMode=$Theme
 Set-CreeperUXTheme $window $script:themeMode
 $script:controls=@{}
-foreach($name in 'GamePath','SteamPath','BrowseGame','BrowseSteam','GuidanceOnly','MouseOnly','FullInstall','Check','Save','Start','CopyOption','LaunchOption','Recover','OpenLogs','StatusTitle','StatusMessage','StatusCard','BusyBar','PreviewRoot','ThemeToggle','StatusMark','ModeDescription','Detect','GameCandidates','SteamCandidates','PackageVersion','DisableMod','EnableMod','Keybindings'){$script:controls[$name]=$window.FindName($name)}
+foreach($name in 'GamePath','SteamPath','BrowseGame','BrowseSteam','GuidanceOnly','MouseOnly','Check','Save','Start','CopyOption','LaunchOption','Recover','OpenLogs','StatusTitle','StatusMessage','StatusCard','BusyBar','PreviewRoot','ThemeToggle','StatusMark','ModeDescription','Detect','GameCandidates','SteamCandidates','PackageVersion','DisableMod','EnableMod','Keybindings'){$script:controls[$name]=$window.FindName($name)}
 $script:worker=$null;$script:async=$null;$script:option=''
 $infoPath=Join-Path $PSScriptRoot 'package-info.json'
 if(Test-Path -LiteralPath $infoPath){
@@ -33,7 +33,7 @@ function Set-AC8GuiStatus([string]$Title,[string]$Message,[bool]$Success=$true){
  $script:controls.StatusMark.SetResourceReference([Windows.Controls.Border]::BackgroundProperty,$key)
 }
 function Set-AC8GuiBusy([bool]$Busy){
- foreach($name in 'GamePath','SteamPath','BrowseGame','BrowseSteam','GuidanceOnly','MouseOnly','FullInstall','Check','Detect','Save','Start','Recover','GameCandidates','SteamCandidates','DisableMod','EnableMod','Keybindings'){$script:controls[$name].IsEnabled=!$Busy}
+ foreach($name in 'GamePath','SteamPath','BrowseGame','BrowseSteam','GuidanceOnly','MouseOnly','Check','Detect','Save','Start','Recover','GameCandidates','SteamCandidates','DisableMod','EnableMod','Keybindings'){$script:controls[$name].IsEnabled=!$Busy}
  $script:controls.BusyBar.IsIndeterminate=[Windows.SystemParameters]::ClientAreaAnimation
  $script:controls.BusyBar.Value=50
  $script:controls.BusyBar.Visibility=if($Busy){'Visible'}else{'Collapsed'}
@@ -82,12 +82,11 @@ $timer.Add_Tick({
 function Update-AC8GuiModeDescription {
  $mode=Get-AC8GuiSelectedMode $script:controls
  $script:controls.ModeDescription.Text=switch($mode){
-  'guidance'{'仅调整比例引导，保留原版性能、近炸设置与外观。'}
-  'full'{'启用比例引导、性能强化、近炸设置与外观替换。'}
+  'guidance'{'比例引导与按弹种选择的近炸增强，下次启动生效。'}
   'none'{'仅安装鼠标飞控，所有导弹保持原版。'}
  }
 }
-foreach($name in 'GuidanceOnly','FullInstall','MouseOnly'){$script:controls[$name].Add_Checked({Update-AC8GuiModeDescription})}
+foreach($name in 'GuidanceOnly','MouseOnly'){$script:controls[$name].Add_Checked({Update-AC8GuiModeDescription})}
 $script:controls.ThemeToggle.Content=if($Theme -eq 'dark'){'切换浅色'}else{'切换深色'}
 $script:controls.ThemeToggle.Add_Click({
  $script:themeMode=if($script:themeMode -eq 'dark'){'light'}else{'dark'}
@@ -142,10 +141,10 @@ $window.Add_Closing({param($sender,$event)
 })
 if($SmokeTest){
  # Exercise all three actual mutually-exclusive radio controls and legacy configuration migration.
- foreach($mode in 'guidance','full','none'){
+ foreach($mode in 'guidance','none'){
   Set-AC8GuiSelectedMode $script:controls $mode
   if((Get-AC8GuiSelectedMode $script:controls) -ne $mode){throw 'GUI installation mode mapping failed'}
-  $checked=@('GuidanceOnly','FullInstall','MouseOnly' | Where-Object {$script:controls[$_].IsChecked})
+  $checked=@('GuidanceOnly','MouseOnly' | Where-Object {$script:controls[$_].IsChecked})
   if($checked.Count -ne 1 -or !$script:controls.ModeDescription.Text){throw 'GUI mode selection is not exclusive or lacks description'}
  }
  Set-AC8GuiSelectedMode $script:controls (Read-FeatureSettings (Join-Path $PSScriptRoot 'features.ini')).MissileMode

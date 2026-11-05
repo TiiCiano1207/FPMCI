@@ -67,7 +67,7 @@ bool run_gpu_hud(){
                     interpolation_width=width;interpolation_height=height;
                     const double clock_ms=1000.0/perf_frequency.QuadPart;
                     predictor.observe({f.pawn,f.camera_manager,f.epoch,f.camera_sequence,f.camera_qpc*clock_ms,f.cp,f.cy,f.cr,f.fov});
-                    const bool eligible=!ui_only&&requested&&!manual_camera_active.load()&&!gaze_active.load()&&!context_suspended.load();
+                    const bool eligible=!ui_only&&requested&&!manual_camera_active.load()&&!target_gaze_active.load()&&!gaze_active.load()&&!context_suspended.load();
                     auto prediction=predictor.evaluate(hud_qpc()*clock_ms,flight::basis(f.tp,f.ty,0).f,flight::basis(f.p,f.y,f.r).f,offset,float(width),float(height),eligible);
                     auto view=prediction.applied?prediction.view:flight::basis(f.cp,f.cy,f.cr);
                     if(prediction.applied){++predicted_count;peak_shift=std::max(peak_shift,prediction.shift_px);}else if(requested)++fallback_count;

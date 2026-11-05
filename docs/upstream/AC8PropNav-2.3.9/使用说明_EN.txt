@@ -1,0 +1,62 @@
+AC8PropNav - MOD Launcher / UE4SS build
+Version 2.3.9
+=======================================
+
+What this is
+------------
+Adds proportional lead ("foresight") to ACE COMBAT 8 missiles, and lets you tune
+lock-on range / turn rate / seeker field of view / lifetime per weapon type.
+
+This build changes **only how the mod is loaded**: the core is loaded by a UE4SS
+Lua script (Mod Launcher's Modded mode) instead of the AVRT.dll proxy host.
+Behaviour is identical to the AVRT build; the default ini is unchanged.
+
+v2.3.9: supports the **2026-11-02 game update** (new exe). No feature or usage
+changes. Upgrading from 2.3.8: close the game and replace
+`Scripts\AC8PropNav.dll`; your ini does not need to be touched.
+
+
+Requirements
+------------
+- ACE8 Mod Launcher (or any install that ships UE4SS 3.0.x).
+- Offline / single-player only. With anti-cheat enabled, UE4SS itself is not
+  loaded, so this mod is inactive.
+
+
+Install
+-------
+Option 1 (recommended): drop this zip onto the Launcher window (Mods page -> Add mods).
+Option 2 (manual): copy the AC8PropNav folder into
+      <game>\Game\Binaries\Win64\ue4ss\Mods\
+
+Expected layout:
+      ...\ue4ss\Mods\AC8PropNav\enabled.txt
+      ...\ue4ss\Mods\AC8PropNav\Scripts\main.lua
+      ...\ue4ss\Mods\AC8PropNav\Scripts\AC8PropNav.dll
+      ...\ue4ss\Mods\AC8PropNav\Scripts\AC8PropNav.ini
+
+Do NOT install together with the AVRT build (2.3.7 and older, AVRT.dll in Win64).
+Pick one. The core refuses to start twice when it sees the old proxy host, and
+says so in its log.
+
+
+Config / logs
+-------------
+      ...\ue4ss\Mods\AC8PropNav\Scripts\AC8PropNav.ini      settings (defaults unchanged)
+      ...\ue4ss\Mods\AC8PropNav\Scripts\AC8PropNav.log      runtime log
+      ...\ue4ss\Mods\AC8PropNav\Scripts\AC8PropNav.key.log  key diagnostics
+
+Editing the ini takes effect a few seconds after saving. LockonRange takes effect
+after one weapon switch.
+
+
+Uninstall
+---------
+Delete the ue4ss\Mods\AC8PropNav folder. Nothing else is left behind.
+
+
+Compatibility
+-------------
+- No game files are modified. Game updates may break it; the log will say why.
+- Coexists with other UE4SS script mods. The Launcher's Unmodded mode moves the
+  whole ue4ss folder out of the game, so nothing is loaded online.

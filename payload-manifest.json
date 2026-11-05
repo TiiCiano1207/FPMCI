@@ -25,7 +25,7 @@
   },
   {
     "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\AC8MouseAim\\Scripts\\ac8_mouse_aim_010.dll",
-    "SHA256": "74D0CE3D786155C5B3F687E793B2EB7A0F932F7D083D53106EA2E68D3FE252A9"
+    "SHA256": "B74A1FDCB55832DD1B67BA93CB02BFE4B93DDABAEC7A3B152AEE6D31092362E8"
   },
   {
     "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\AC8MouseAim\\Scripts\\camera-settings.lua",
@@ -41,7 +41,7 @@
   },
   {
     "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\AC8MouseAim\\Scripts\\gaze.lua",
-    "SHA256": "C2774CC721C4E7725A651058C3392D94539AA21512280CC52B38FAEA0206A3CB"
+    "SHA256": "7791EBB5EFE2A20F407BE389D18A648CBEABBF27EADD88B8A50D5134BE78BF11"
   },
   {
     "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\AC8MouseAim\\Scripts\\gaze_probe.lua",
@@ -57,7 +57,7 @@
   },
   {
     "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\AC8MouseAim\\Scripts\\main.lua",
-    "SHA256": "B00B171939995689B22E9B0065A1084A14C97928EDD576F6C6C9ECD629EAA35D"
+    "SHA256": "229FE4B8AA515B45A7AE39EA5A997F390FAEC497F412462CD12028FD13C731A7"
   },
   {
     "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\AC8MouseAim\\Scripts\\native_hud.lua",
@@ -113,7 +113,19 @@
   },
   {
     "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\AC8SourceInit\\Scripts\\config.lua",
-    "SHA256": "CC9EFC4B1808BA56E0EB8C009CFA653FCA8056DF4C753BEBCECD5E96B3525AD6"
+    "SHA256": "A7516F4A867B5D42C7285D3B0E108273B726B54561B0971E44DC456B146E85EA"
+  },
+  {
+    "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\AC8SourceInit\\Scripts\\fuse\\core.lua",
+    "SHA256": "8596A24C96DF0290FEC75B1F118E08C4DABBF1CA3D0747F8FC1AAD174F6DDAE5"
+  },
+  {
+    "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\AC8SourceInit\\Scripts\\fuse\\main.lua",
+    "SHA256": "9CB2BE6195FB041464942E5C8A69A425B70FF19E57F9FA42CFF22D654D7E9558"
+  },
+  {
+    "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\AC8SourceInit\\Scripts\\fuse\\settings.lua",
+    "SHA256": "5A1DFA4B95FE86B82707DDA61F122CC4DC20061EF69F6B5462B23DBCDCD906BD"
   },
   {
     "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\AC8SourceInit\\Scripts\\guidance_values.lua",
@@ -121,11 +133,11 @@
   },
   {
     "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\AC8SourceInit\\Scripts\\installation_mode.lua",
-    "SHA256": "E8F9746184311BD11F77B3777F80D0D7D70106F45C71DDBAA6D8C1BBE78ACF61"
+    "SHA256": "3D69B77B015F643142CF410463DC046C47198BBAAD1134DA800E0DFCD312AD9E"
   },
   {
     "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\AC8SourceInit\\Scripts\\main.lua",
-    "SHA256": "F9B7D3ECAF099ADE18A7EEC12CEB5FEA876FBF5EAC574CDE58758935E0377253"
+    "SHA256": "E06CE0A7101C41B2FC7F607C965CD13D442C20F361265392C3A9F59CCFE01DAE"
   },
   {
     "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\AC8SourceInit\\Scripts\\msl_visual_rules.lua",
@@ -140,8 +152,16 @@
     "SHA256": "A222ADFA763CDFC152B063BE5B0AE1984099B322285EFFC34D660108195E5F57"
   },
   {
+    "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\AC8SourceInit\\Scripts\\propnav\\AC8PropNav.dll",
+    "SHA256": "B4207774B64CE542CB9174708E25906CBCBBB785A9D361786753D30846BDA222"
+  },
+  {
+    "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\AC8SourceInit\\Scripts\\propnav_bridge.lua",
+    "SHA256": "DCC29352477DF4364EAC232FD85FFF77B7191A009A122C5654837DFCDB4421A7"
+  },
+  {
     "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\AC8SourceInit\\Scripts\\selected_spec.lua",
-    "SHA256": "FAC5F9B451135455B5257339B2F627FE66420E69789026BC195DBEF5F1448E79"
+    "SHA256": "5FB4D8A0774886C88E055EDE62B8B0567B2A1178154D1BEBBFF148184A65A35A"
   },
   {
     "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\AC8SourceInit\\Scripts\\source_init.lua",

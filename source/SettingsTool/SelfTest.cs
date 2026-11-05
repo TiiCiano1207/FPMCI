@@ -19,6 +19,35 @@ namespace AC8Settings {
     var app=new Application();var ui=new SettingsWindow(root,true);
     ui.Window.Left=-12000;ui.Window.Top=-12000;ui.Window.WindowStartupLocation=WindowStartupLocation.Manual;ui.Window.ShowInTaskbar=false;ui.Window.ShowActivated=false;ui.Window.Show();
     ui.ShowPage(8);ui.Window.UpdateLayout();
+    Check(((TextBlock)ui.Window.FindName("PageTitle")).Text=="导弹强化","Missile page not renamed.");
+    var fuseBoxes=Children(ui.Window).OfType<CheckBox>().Where(x=>AutomationProperties.GetName(x).EndsWith(" 近炸增强")).ToArray();
+    Check(fuseBoxes.Length==11,"Expected eleven per-type fuse switches.");
+    fuseBoxes.Single(x=>AutomationProperties.GetName(x)=="MSL 近炸增强").IsChecked=true;
+    Check(new ConfigStore(root).State.Values["fuse_MSL"]==0,"Unsaved UI change leaked to disk.");
+    Check(Children(ui.Window).OfType<TextBlock>().Any(x=>x.Text.StartsWith("SASM 原版自带空爆")),"Vanilla reference missing.");
+    var radius=Children(ui.Window).OfType<TextBox>().Single(x=>AutomationProperties.GetName(x)=="MSL 触发距离（米）");
+    Check(radius.IsVisible,"Enabled fuse parameters not visible.");radius.Text="201";
+    ((Button)ui.Window.FindName("Save")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    Check(new ConfigStore(root).State.Values["fuse_MSL"]==0,"Invalid per-type value was saved.");
+    radius.Text="15.5";
+    Children(ui.Window).OfType<TextBox>().Single(x=>AutomationProperties.GetName(x)=="MSL 爆炸半径（米）").Text="25";
+    Children(ui.Window).OfType<TextBox>().Single(x=>AutomationProperties.GetName(x)=="MSL 范围伤害").Text="40";
+
+    ((Button)ui.Window.FindName("Save")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    Check(new ConfigStore(root).State.Values["fuse_MSL"]==1&&new ConfigStore(root).State.Values["fuse_QAAM"]==0,"Fuse switch save or independence failed.");
+    var afterSave=new ConfigStore(root);
+    Check(afterSave.State.Values["fuse_MSL_TRIGGER"]==15.5&&afterSave.State.Values["fuse_MSL_BLAST"]==25&&afterSave.State.Values["fuse_MSL_DAMAGE"]==40&&afterSave.State.Values["fuse_QAAM_TRIGGER"]==30,"Per-type values mixed or not persisted.");
+    var mslToggle=Children(ui.Window).OfType<CheckBox>().Single(x=>AutomationProperties.GetName(x)=="MSL 近炸增强");
+    mslToggle.IsChecked=false;
+    Check(!Children(ui.Window).OfType<TextBox>().Single(x=>AutomationProperties.GetName(x)=="MSL 触发距离（米）").IsVisible,"Disabled numeric panel not collapsed.");
+    mslToggle.IsChecked=true;
+    Check(Children(ui.Window).OfType<TextBox>().Single(x=>AutomationProperties.GetName(x)=="MSL 触发距离（米）").Text=="15.5","Toggle lost retained numeric values.");
+    ((Button)ui.Window.FindName("RestoreBackup")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    Check(new ConfigStore(root).State.Values["fuse_MSL"]==0,"Fuse backup restore failed.");
+    ui.ShowPage(5);ui.Window.UpdateLayout();
+    var installation=Children(ui.Window).OfType<ComboBox>().Single();
+    Check(installation.Items.Count==2&&!installation.Items.Cast<object>().Any(x=>x.ToString().Contains("完整")),"Full installation option remains.");
+    ui.ShowPage(8);ui.Window.UpdateLayout();
     var guide=Children(ui.Window).OfType<TextBox>().Single(x=>AutomationProperties.GetName(x)=="MSL 引导数值");
     Check(guide.Text==new ConfigStore(root).State.Values["guidance_MSL"].ToString("0.000",System.Globalization.CultureInfo.InvariantCulture),"Guidance page did not load saved value.");
     string guidanceBefore=File.Exists(Path.Combine(root,"MissileGuidance.ini"))?File.ReadAllText(Path.Combine(root,"MissileGuidance.ini")):null;
@@ -167,6 +196,17 @@ namespace AC8Settings {
     store.Refresh(frameState);Check(frameState.FrameGenerationEnabled!=initialFrame&&frameState.Values["sensitivity"]==.234,"Frame generation refresh discarded unrelated edits.");
     if(initialFrameBytes==null)File.Delete(framePath);else File.WriteAllBytes(framePath,initialFrameBytes);
     store.Load();checks.Add("Frame generation: load, copy/dirty state, on/off save, exact backup restore, default off, plugin initialization, invalid input and concurrent refresh passed.");
+    Check(Guidance.FuseRules.All(r=>store.State.Values[r.Key]==0),"New fuse settings not defaulted to original.");
+    var fs=store.State.Copy();fs.Values["fuse_MSL"]=1;
+    Check(fs.Signature()!=store.State.Signature(),"Fuse missing from dirty signature.");
+    store.Save(fs);Check(store.State.Values["fuse_MSL"]==1&&store.State.Values["fuse_QAAM"]==0,"Fuse serialization failed.");
+    store.Restore();Check(store.State.Values["fuse_MSL"]==0,"Absent fuse config restore failed.");
+    fs=store.State.Copy();fs.Values["fuse_MSL"]=.5;Reject(()=>store.Validate(fs),"Fractional fuse flag accepted.");
+    Reject(()=>Guidance.ParseFuses("MSL=1",store.State.Copy()),"Partial fuse config accepted.");
+    var numbers=store.State.Copy();numbers.Values["fuse_MSL_TRIGGER"]=15.5;numbers.Values["fuse_MSL_BLAST"]=25;numbers.Values["fuse_MSL_DAMAGE"]=40;numbers.Values["fuse_QAAM_TRIGGER"]=60;
+    store.Save(numbers);Check(store.State.Values["fuse_MSL_TRIGGER"]==15.5&&store.State.Values["fuse_QAAM_TRIGGER"]==60,"Independent numeric save failed.");
+    store.Restore();Check(store.State.Values["fuse_MSL_TRIGGER"]==30,"Numeric restore failed.");
+    foreach(double bad in new[]{0,201,double.NaN,double.PositiveInfinity,1.2345}){var invalid=store.State.Copy();invalid.Values["fuse_MSL_TRIGGER"]=bad;Reject(()=>store.Validate(invalid),"Invalid fuse radius accepted.");}
     var guidanceState=store.State.Copy();
     foreach(double invalid in new[]{-0.1,1.001,double.NaN,double.PositiveInfinity,.1234}){guidanceState.Values["guidance_MSL"]=invalid;Reject(()=>store.Validate(guidanceState),"Invalid guidance value accepted.");}
     Reject(()=>Guidance.Parse("MSL=0.5",store.State.Copy()),"Partial guidance config accepted.");
