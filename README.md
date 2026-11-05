@@ -28,9 +28,29 @@ Download the full release ZIP, extract it outside the game directory, run **AC8W
 
 ## 1.1.7 更新 / Changes
 
-接入 PropNav 2.3.9；独立近炸参数和原版伤害参考；自由观察、手动注视和镜头回正修复；等待会话整理后继续启动。
+本版包含公开版 1.1.2 之后的累计更新：
 
-Integrate PropNav 2.3.9, per-type fuse controls and damage references; fix free-look/manual-focus/camera return and session-cleanup waiting. See [full release notes](RELEASE-v1.1.7.md).
+- **更新比例制导模块**：接入 AC8PropNav 2.3.9，保留已有的比例引导设置。
+- **新增按弹种设置的近炸增强**：“导弹强化”页面中，11 类导弹可分别开启近炸，并单独调整触发距离、爆炸半径和范围伤害。近炸增强默认关闭，SASM 原版自带的空爆保留。
+- **简化安装选项**：移除“完整导弹强化”预设，保留“飞控 + 导弹模块”和“仅鼠标飞控”两种方案。
+- **加入原版伤害参考**：在各弹种的“范围伤害”后显示原版直接命中伤害，方便调整时对照；页面顶部保留 SASM 原版空爆参考。
+- **调整自由观察的灵敏度**：自由观察与鼠标操控圈使用相同的视野角度（FOV）换算，改善正常视野和缩放时两者手感不一致的问题。
+- **保留注视目标时的鼠标操控**：手动注视目标时，相机继续跟踪目标，鼠标操控圈仍可用于控制飞机；暂停和剧情强制镜头仍会暂停鼠标飞控。
+- **改善自由观察退出时的镜头衔接**：修复驾驶舱镜头回正首帧停顿，并平滑处理缩放恢复及外部相机位置的切换。
+- **处理游戏退出后暂时无法再次启动的问题**：如果后台还在恢复文件或整理记录，启动器会最多等待 60 秒，完成后自动继续；超时会提示稍候重试。
+
+This release includes the cumulative changes since public version 1.1.2:
+
+- **Updated missile guidance:** integrate AC8PropNav 2.3.9 while preserving existing guidance settings.
+- **Per-missile proximity fuses:** enable the enhancement separately for eleven missile types and adjust each type's trigger distance, blast radius and area damage. Defaults remain off, preserving stock SASM airburst.
+- **Simpler installation choices:** retire the full-enhancement preset; choose flight control with missile modules, or flight control only.
+- **Stock damage references:** show each missile's base direct-hit damage beside the area-damage setting, with stock SASM airburst values at the top of the page.
+- **Consistent mouse sensitivity:** use the same FOV conversion for free look and the flight ring to improve their feel at normal and zoomed views.
+- **Mouse flight during target focus:** let the game camera track the target while the mouse ring continues controlling the aircraft. Pauses and forced cinematic views still suspend mouse flight.
+- **Smoother free-look return:** remove the cockpit return's initial held frame and smooth optical-zoom recovery and external camera-position transitions.
+- **Wait for cleanup before restarting:** if the previous session is still restoring files or maintaining records, wait up to 60 seconds and continue automatically; show a specific retry message on timeout.
+
+安装方式、各项参数及验证范围见 [完整更新说明 / Full release notes](RELEASE-v1.1.7.md)。
 
 ## 1.1.2 更新 / Changes
 
