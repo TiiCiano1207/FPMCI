@@ -28,7 +28,7 @@ Download the full release ZIP, extract it outside the game directory, run **AC8W
 
 ## 1.2.0 更新 / Changes
 
-敌方 AI 增强专页、第三人称 EEGS、Su-35 MGP 修复和附加 MOD 排序。详见 [完整更新说明](CHANGELOG-1.2.0.md)。
+敌方 AI 增强专页、第三人称 EEGS、附加 MOD 排序。详见 [完整更新说明](CHANGELOG-1.2.0.md)。
 
 ## 1.1.7 更新 / Changes
 
