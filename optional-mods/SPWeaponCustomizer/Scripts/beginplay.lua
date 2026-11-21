@@ -1,4 +1,4 @@
-return function(defs,mounts,log,borrowLoadout,borrowMissionLoadout,missionMgp)
+return function(defs,mounts,log,borrowLoadout,borrowMissionLoadout,missionSp,ownsSelection)
     local byName={}
     for _,d in ipairs(defs.aircraft) do
         byName['BP_PlayerPlane_'..d.code..'_C']=d
@@ -25,7 +25,7 @@ return function(defs,mounts,log,borrowLoadout,borrowMissionLoadout,missionMgp)
     end
     RegisterLoadMapPreHook(function()
         worldChecked=nil
-        missionMgp.resetObserver()
+        missionSp.resetObserver()
         endMissionLoadout()
     end)
     local function prepareMission(actor)
@@ -35,12 +35,21 @@ return function(defs,mounts,log,borrowLoadout,borrowMissionLoadout,missionMgp)
         if worldChecked==address then return end
         endMissionLoadout()
         worldChecked=address
-        if not su35 or not (su35.target[1]==20 or su35.target[2]==20 or su35.target[3]==20) then return end
         if world.NetDriver and world.NetDriver:IsValid() then return end
         if not tostring(world:GetFullName()):match('%.PL_Mission[%w_]*$') then return end
-        missionRelease=borrowMissionLoadout(su35)
+        local d,pair=missionSp.confirmedAircraft()
+        if d and d.missionWeapon then
+            if not ownsSelection(d,pair[1],pair[2]) then
+                log('MISSION loadout skipped '..d.section..': confirmed weapon ownership not verified')
+                return
+            end
+        else
+            d=su35
+            if not d or not (d.target[1]==20 or d.target[2]==20 or d.target[3]==20) then return end
+        end
+        missionRelease=borrowMissionLoadout(d)
         if missionRelease then
-            log('MISSION loadout Su-35 slots='..table.concat(su35.target,','))
+            log('MISSION loadout '..d.section..' slots='..table.concat(d.target,','))
         else
             worldChecked=nil
         end
@@ -78,7 +87,7 @@ return function(defs,mounts,log,borrowLoadout,borrowMissionLoadout,missionMgp)
             if world.NetDriver and world.NetDriver:IsValid() then return end
             pcall(markWorld,world,d)
             if d.target[1]==d.original[1] and d.target[2]==d.original[2] and d.target[3]==d.original[3] then
-                missionMgp.prepare(actor,d)
+                missionSp.prepare(actor,d,ownsSelection)
                 return
             end
             mounts.prepare(d,actor)
@@ -93,7 +102,7 @@ return function(defs,mounts,log,borrowLoadout,borrowMissionLoadout,missionMgp)
                 entry.release=release
                 pending[id]=entry
             end
-            missionMgp.prepare(actor,d)
+            missionSp.prepare(actor,d,ownsSelection)
         end)
         if not ok then log('BEGIN PRE failed: '..tostring(err)) end
     end)

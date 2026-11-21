@@ -174,7 +174,7 @@
     },
     {
       "path": "optional-mods/SPWeaponCustomizer/Scripts/beginplay.lua",
-      "sha256": "beb5a517aa1c54fde249d8f7a9360d1fdbfe19c9b64faa2f0b59f3cc147b58d8"
+      "sha256": "59b6200f84c08d9838476ed3bfd06d2d29535b5f0a3ae940b0ffa2e957a6dd0d"
     },
     {
       "path": "optional-mods/SPWeaponCustomizer/Scripts/build.lua",
@@ -182,7 +182,7 @@
     },
     {
       "path": "optional-mods/SPWeaponCustomizer/Scripts/definitions.lua",
-      "sha256": "89a511e96ab8b1837ebd613c5aafc0435ea4864afe3ff8fd0d8f7f63f7a310db"
+      "sha256": "f63e8f163c1e3643f132f3d0adb00ed6a52e1599b7b24814ce00884258f88e5c"
     },
     {
       "path": "optional-mods/SPWeaponCustomizer/Scripts/diagnostics.lua",
@@ -194,7 +194,7 @@
     },
     {
       "path": "optional-mods/SPWeaponCustomizer/Scripts/main.lua",
-      "sha256": "63f267d2050e52fbc4938c9639817ffdb3af3b4f6b64b3da4e95c869f6345409"
+      "sha256": "c0d8bdd3d1909ca51dbdf8a1267307975bb1153e6860933e77531a203bfdf619"
     },
     {
       "path": "optional-mods/SPWeaponCustomizer/Scripts/menu_plan.lua",
@@ -206,7 +206,7 @@
     },
     {
       "path": "optional-mods/SPWeaponCustomizer/Scripts/mission_mgp.lua",
-      "sha256": "8c490567dcd453fc4c684fb0d2d77e33d7523f0ca84da79f4aae82f89c21b27d"
+      "sha256": "32252f508c36d9243df4609af90580072952f65b460937e367034533cbb56a21"
     },
     {
       "path": "optional-mods/SPWeaponCustomizer/Scripts/models.lua",
@@ -222,7 +222,7 @@
     },
     {
       "path": "optional-mods/SPWeaponCustomizer/Scripts/ownership.lua",
-      "sha256": "8717f2314611aa768443c60065d50721dc9baa7d23a283b3fad07e7b421525b0"
+      "sha256": "90e4ba27661fc5adca4372ceac347691bcc92fde0ab3f5f886d15ead3f24b3d6"
     },
     {
       "path": "optional-mods/SPWeaponCustomizer/Scripts/plane_ids.lua",

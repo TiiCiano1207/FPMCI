@@ -13,9 +13,10 @@ return function(podID,log)
     local function getMission(pawn,d)
         if not d then return end
         local slot
-        if d.code=='PP0028_su35' then
+        local replacement=d.missionWeapon or (d.code=='PP0028_su35' and podID)
+        if replacement then
             for i,id in ipairs(d.target) do
-                if id==podID then slot=i;break end
+                if id==replacement then slot=i;break end
             end
             if not slot then return end
         elseif d.code=='PP0003_f04e' then
@@ -39,12 +40,37 @@ return function(podID,log)
         return valid(controller) and (same(controller.Pawn,pawn) or same(pawn.Controller,controller))
     end
     local function confirm(d,first,second)
-        accepted=nil
-        if d.code=='PP0028_su35' and (first==podID or second==podID) and first~=second then
-            accepted={first,second}
+        accepted={first,second,aircraft=d}
+    end
+    local function confirmed(d)
+        if accepted and accepted.aircraft==d then return accepted end
+    end
+    local function recoveryPair(d)
+        local pair=confirmed(d)
+        local replacement=d.missionWeapon or (d.code=='PP0028_su35' and podID)
+        if pair and replacement and (pair[1]==replacement or pair[2]==replacement) and pair[1]~=pair[2] then
+            return pair
         end
     end
-    local function prepare(pawn,d)
+    local function confirmedAircraft()
+        local pair=accepted and recoveryPair(accepted.aircraft)
+        if pair then return pair.aircraft,pair end
+    end
+    local function repair(pawn,d,first,second,pair)
+        local ok,why=pcall(function()
+            pawn.PlaneSpWeaponID1=pair[1]
+            pawn.PlaneSpWeaponID2=pair[2]
+            assert(pawn.PlaneSpWeaponID1==pair[1] and pawn.PlaneSpWeaponID2==pair[2],
+                'mission selection readback failed')
+        end)
+        if not ok then
+            pawn.PlaneSpWeaponID1=first
+            pawn.PlaneSpWeaponID2=second
+            error(why)
+        end
+        log(string.format('MISSION SP repaired %s %d,%d -> %d,%d',d.section,first,second,pair[1],pair[2]))
+    end
+    local function prepare(pawn,d,ownsSelection)
         local world,mission,slot=getMission(pawn,d)
         if not world then return end
         local first,second=pawn.PlaneSpWeaponID1,pawn.PlaneSpWeaponID2
@@ -52,7 +78,7 @@ return function(podID,log)
         local active=pawn.PlayerWeaponActivator
         if not valid(active) then return end
         local nativeIDs,configs={},{}
-        each(active.SpecialWeaponConfigs,64,'Su-35 mission mount configs',function(i,row)
+        each(active.SpecialWeaponConfigs,64,'mission mount configs',function(i,row)
             local class=row.WeaponClass
             local defaults=valid(class) and class:GetCDO()
             local id=valid(defaults) and defaults.WeaponID or nil
@@ -60,16 +86,38 @@ return function(podID,log)
             configs[i]=string.format('%s/%s/%s',tostring(row.SpWeaponID),tostring(id),
                 valid(class) and (class:GetFullName():match('[^%. /]+$') or '?') or '-')
         end)
+        local pair=recoveryPair(d)
         log(string.format('MISSION SP input %s map=%s local=%s native=%s,%s confirmed=%s mounts=%s',
             d.section,mission,tostring(localPlayer),tostring(first),tostring(second),
-            slot and accepted and table.concat(accepted,',') or '-',table.concat(configs,',')))
-        if not slot or not localPlayer or not accepted or first==podID or second==podID then return end
+            slot and pair and table.concat(pair,',') or '-',table.concat(configs,',')))
+        if not slot or not localPlayer or not pair then return end
+        if d.missionWeapon then
+            if first==pair[1] and second==pair[2] then return end
+            local function compatible(id)
+                return id==0 or id==pair[1] or id==pair[2] or id==d.original[slot]
+            end
+            if not compatible(first) or not compatible(second) then
+                log('MISSION SP skipped '..d.section..': live selection differs from confirmation')
+                return
+            end
+            if not nativeIDs[pair[1]] or (pair[2]~=0 and not nativeIDs[pair[2]]) then
+                log('MISSION SP skipped '..d.section..': confirmed weapon class missing')
+                return
+            end
+            if not ownsSelection(d,pair[1],pair[2]) then
+                log('MISSION SP skipped '..d.section..': confirmed weapon ownership not verified')
+                return
+            end
+            repair(pawn,d,first,second,pair)
+            return
+        end
+        if first==podID or second==podID then return end
 
         -- The spawn path matches PlaneSpWeaponID1/2 against the weapon CDO IDs.
         -- Recover only a missing pod when the other native selection still
         -- matches the accepted pair. The missing slot may be empty, retain its
         -- catalog ID, or duplicate the surviving weapon after native fallback.
-        local partner=accepted[1]==podID and accepted[2] or accepted[1]
+        local partner=pair[1]==podID and pair[2] or pair[1]
         if not nativeIDs[podID] or (partner~=0 and not nativeIDs[partner]) then
             log('MISSION SP skipped Su-35: confirmed weapon class missing')
             return
@@ -81,18 +129,7 @@ return function(podID,log)
             log('MISSION SP skipped Su-35: live selection differs from confirmation')
             return
         end
-        local ok,why=pcall(function()
-            pawn.PlaneSpWeaponID1=accepted[1]
-            pawn.PlaneSpWeaponID2=accepted[2]
-            assert(pawn.PlaneSpWeaponID1==accepted[1] and pawn.PlaneSpWeaponID2==accepted[2],
-                'mission selection readback failed')
-        end)
-        if not ok then
-            pawn.PlaneSpWeaponID1=first
-            pawn.PlaneSpWeaponID2=second
-            error(why)
-        end
-        log(string.format('MISSION SP repaired Su-35 %d,%d -> %d,%d',first,second,accepted[1],accepted[2]))
+        repair(pawn,d,first,second,pair)
     end
     local function observe(pawn,d)
         if not valid(pawn) then return end
@@ -104,7 +141,7 @@ return function(podID,log)
         local equipped=valid(active) and active.EquippedWeapons
         if not valid(equipped) or equipped.Configs:GetArrayNum()==0 then return end
         local ids={}
-        each(equipped.Configs,64,'Su-35 equipped configs',function(i,row)
+        each(equipped.Configs,64,'mission equipped configs',function(i,row)
             local defaults=row.WeaponClassDefaultObject
             ids[i]=valid(defaults) and tostring(defaults.WeaponID) or '-'
         end)
@@ -115,5 +152,6 @@ return function(podID,log)
     local function resetObserver()
         observed=nil
     end
-    return {confirm=confirm,prepare=prepare,observe=observe,resetObserver=resetObserver}
+    return {confirm=confirm,confirmed=confirmed,confirmedAircraft=confirmedAircraft,
+        prepare=prepare,observe=observe,resetObserver=resetObserver}
 end

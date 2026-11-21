@@ -1,6 +1,6 @@
 -- Add only configured replacements whose original slot weapon is already owned.
 -- Originals are retained. These additions may be persisted by the game's autosave.
-return function(defs,planeIDs,log)
+return function(defs,planeIDs,log,confirmed)
     -- Bounds reject malformed data without hardcoding the vanilla aircraft count.
     local MAX_AIRCRAFT_RECORDS=512
     local MAX_OWNED_WEAPONS=128
@@ -14,14 +14,20 @@ return function(defs,planeIDs,log)
         byCode[d.code]=d
     end
     for id,code in pairs(planeIDs) do if byCode[code] then byPlane[id]=byCode[code] end end
-    if next(byPlane)==nil then return function()end end
+    if next(byPlane)==nil then return function()end,function()return false end end
     local function identity(o)
         local ok,name=pcall(function()if o and o:IsValid() then return o:GetFullName()end end)
         return ok and name or nil
     end
+    local function confirmedAdditions(d)
+        if d.loadout and d.additions and confirmed then
+            local pair=confirmed(d.loadout)
+            if pair and (d.additions[pair[1]] or d.additions[pair[2]]) then return pair end
+        end
+    end
     local function changed(d)
         for i=1,3 do if d.target[i]~=d.original[i] then return true end end
-        return false
+        return d.podID~=nil or confirmedAdditions(d)~=nil
     end
     local function checkedCount(array,limit,label)
         local count=array:GetArrayNum()
@@ -34,6 +40,37 @@ return function(defs,planeIDs,log)
         assert(index>=1 and index<=count,'Invalid '..label..' index')
         assert(checkedCount(array,limit,label)==count,label..' changed during ownership update')
         return array[index]
+    end
+    local function readOwnership(row)
+        local array=row.OwnedWeapons
+        local count=checkedCount(array,MAX_OWNED_WEAPONS,'OwnedWeapons')
+        local owned={}
+        for index=1,count do
+            local id=readItem(array,index,count,MAX_OWNED_WEAPONS,'OwnedWeapons')
+            assert(type(id)=='number' and id%1==0 and id>=0 and id<=255,'Invalid owned weapon ID')
+            owned[id]=true
+        end
+        return owned,array,count
+    end
+    local function ownsSelection(d,first,second)
+        local found=false
+        for _,entry in pairs(saves) do
+            if identity(entry.object)==entry.name then
+                local campaign=entry.object.CampaignSaveData
+                local records=campaign.AircraftTypeRecords
+                local count=checkedCount(records,MAX_AIRCRAFT_RECORDS,'AircraftTypeRecords')
+                for index=1,count do
+                    local row=readItem(records,index,count,MAX_AIRCRAFT_RECORDS,'AircraftTypeRecords')
+                    local aircraft=byPlane[row.PlaneID]
+                    if aircraft and aircraft.loadout==d then
+                        local owned=readOwnership(row)
+                        if not owned[first] or (second~=0 and not owned[second]) then return false end
+                        found=true
+                    end
+                end
+            end
+        end
+        return found
     end
     local function remember(o,fresh)
         local name=identity(o)
@@ -58,14 +95,9 @@ return function(defs,planeIDs,log)
             local row=readItem(records,recordIndex,recordCount,MAX_AIRCRAFT_RECORDS,'AircraftTypeRecords')
             local d=byPlane[row.PlaneID]
             if d and changed(d) then
-                local array=row.OwnedWeapons;local owned={};local pending={};local vanilla={}
-                local count=checkedCount(array,MAX_OWNED_WEAPONS,'OwnedWeapons')
+                local owned,array,count=readOwnership(row)
+                local pending={};local vanilla={}
                 for _,id in ipairs(d.original) do vanilla[id]=true end
-                for weaponIndex=1,count do
-                    local id=readItem(array,weaponIndex,count,MAX_OWNED_WEAPONS,'OwnedWeapons')
-                    assert(type(id)=='number' and id%1==0 and id>=0 and id<=255,'Invalid owned weapon ID')
-                    owned[id]=true
-                end
                 -- Snapshot membership first: one replacement cannot unlock another slot.
                 local additions=0
                 for i=1,3 do
@@ -79,16 +111,15 @@ return function(defs,planeIDs,log)
                         pending[target]=true;additions=additions+1
                     end
                 end
-                -- A customization can be saved as equipped even when the campaign
-                -- inventory still excludes it. Mirror the paid physical slot for
-                -- the Su-35 pod without changing the aircraft's catalog entries.
-                if d.podID and not owned[d.podID] and not pending[d.podID] then
-                    for i,id in ipairs(d.loadout.target) do
-                        if id==d.podID and (owned[d.original[i]] or owned[d.target[i]]) then
-                            pending[id]=true
-                            additions=additions+1
-                            break
-                        end
+                -- Keep the saved Su-35 pod migration. For other additions,
+                -- require a fresh confirmation and a paid physical slot.
+                local pair=confirmedAdditions(d)
+                for i,id in ipairs(d.loadout and d.loadout.target or {}) do
+                    local selected=pair and d.additions[id] and (id==pair[1] or id==pair[2])
+                    if (selected or id==d.podID) and not owned[id] and not pending[id] and not vanilla[id]
+                        and (owned[d.original[i]] or owned[d.target[i]]) then
+                        pending[id]=true
+                        additions=additions+1
                     end
                 end
                 assert(count+additions<=MAX_OWNED_WEAPONS,'Unexpected owned weapon count')
@@ -108,7 +139,7 @@ return function(defs,planeIDs,log)
         return recordCount
     end
     log('OWNERSHIP scheduler active (2.6): immediate confirmations; new saves checked on next maintenance; settled fallback every 300 frames')
-    return function(force)
+    local function update(force)
         -- Preserve the existing no-argument afterCommit callback contract.
         -- Only background callbacks advance the frame-based fallback clock.
         if force==false then tick=tick+1 end
@@ -135,4 +166,5 @@ return function(defs,planeIDs,log)
             end
         end
     end
+    return update,ownsSelection
 end

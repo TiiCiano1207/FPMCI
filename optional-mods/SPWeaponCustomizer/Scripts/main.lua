@@ -67,21 +67,23 @@ end
 log("CONFIG Enabled="..config.General.Enabled.." UseHighestCapacity="..ammoConfig.UseHighestCapacity.." aircraft="..#defs.aircraft)
 if config.General.Enabled=="0" then log("Disabled");return end
 local menuRuntime=dofile(dir..'menu_runtime.lua')(dir,defs,mountPaths,log,balance)
--- FPMCI keeps its mappings in the package, outside campaign save data.
+local missionSp=dofile(dir.."mission_mgp.lua")(defs.weapons.MGP,log)
+-- Physical layouts remain in the workbench. Only paid selections are mirrored
+-- into campaign ownership; the technology tree still uses the catalog.
 local migrations={aircraft={}}
 for _,d in ipairs(defs.aircraft) do
-    if d.catalog then
-        local migration={code=d.code,section=d.section,original=d.original,target=d.catalog,legacySlot=d.legacySlot,legacyLoadoutIDs=d.legacyLoadoutIDs}
-        if d.code=='PP0028_su35' then
-            migration.podID=defs.weapons.MGP
-            migration.loadout=d
-        end
+    local candidates=balance.additions[d.section]
+    if d.catalog or candidates then
+        local additions={}
+        for _,name in ipairs(candidates or {}) do additions[defs.weapons[name]]=true end
+        local migration={code=d.code,section=d.section,original=d.original,target=d.catalog or d.original,
+            legacySlot=d.legacySlot,legacyLoadoutIDs=d.legacyLoadoutIDs,loadout=d,additions=additions}
+        if d.code=='PP0028_su35' then migration.podID=defs.weapons.MGP end
         migrations.aircraft[#migrations.aircraft+1]=migration
     end
 end
-local updateOwnership=dofile(dir.."ownership.lua")(migrations,dofile(dir.."plane_ids.lua"),log)
+local updateOwnership,ownsSelection=dofile(dir.."ownership.lua")(migrations,dofile(dir.."plane_ids.lua"),log,missionSp.confirmed)
 local mounts=dofile(dir.."mounts.lua")(mountPaths,log,modelData)
-local missionMgp=dofile(dir.."mission_mgp.lua")(defs.weapons.MGP,log)
 
 local pods=dofile(dir.."pod_visual.lua")(mounts,log)
 local podAircraft={}
@@ -180,7 +182,7 @@ local function borrowMissionLoadout(d)
         if entry.definition==d and entry.done and alive(entry) then return borrowLoadout(d) end
     end
 end
-local endMissionLoadout=dofile(dir.."beginplay.lua")(defs,mounts,log,borrowLoadout,borrowMissionLoadout,missionMgp)
+local endMissionLoadout=dofile(dir.."beginplay.lua")(defs,mounts,log,borrowLoadout,borrowMissionLoadout,missionSp,ownsSelection)
 local function restore()
     mounts.restore()
     for _,e in pairs(tracked) do restoreEntry(e) end
@@ -227,7 +229,7 @@ local function menuOnline()
 end
 local function menuApply(d,target)
     assert(not menuOnline(),'Online play is not supported')
-    if d.code=='PP0028_su35' then endMissionLoadout() end
+    if d.code=='PP0028_su35' or d.missionWeapon then endMissionLoadout() end
     local entries={}
     local function collect()
         for id,e in pairs(tracked) do
@@ -308,7 +310,7 @@ if not previewOK then
     applyPreview=function()end;cancelPreview=nil
 end
 log("STAGE initialize native menu")
-local menuOK,menuError=pcall(menuRuntime.start,menuApply,menuOnline,applyPreview,cancelPreview,borrowLoadout,missionMgp.confirm)
+local menuOK,menuError=pcall(menuRuntime.start,menuApply,menuOnline,applyPreview,cancelPreview,borrowLoadout,missionSp.confirm)
 if not menuOK then log('STATUS native-menu=disabled: '..tostring(menuError))
 else log('STATUS native-menu=active preview='..(previewOK and 'active' or 'unavailable')) end
 
@@ -347,9 +349,9 @@ LoopInGameThreadAfterFrames(30,function()
         pods.flight(pawn,pawnDefinition)
     end)
     if not podOK and not pods.warned then pods.warned=true;log('POD flight: '..tostring(podError)) end
-    local missionOK,missionError=pcall(missionMgp.observe,pawn,pawnDefinition)
-    if not missionOK and not missionMgp.warned then
-        missionMgp.warned=true
+    local missionOK,missionError=pcall(missionSp.observe,pawn,pawnDefinition)
+    if not missionOK and not missionSp.warned then
+        missionSp.warned=true
         log('MISSION SP observe failed: '..tostring(missionError))
     end
     maintenanceTicks=maintenanceTicks+1
