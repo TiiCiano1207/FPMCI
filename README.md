@@ -30,11 +30,6 @@ Download the full release ZIP, extract it outside the game directory, run **AC8W
 
 敌方 AI 增强专页、第三人称 EEGS、Su-35 MGP 修复和附加 MOD 排序。详见 [完整更新说明](CHANGELOG-1.2.0.md)。
 
-## 作者 / Authors
-
-- **TiiCiano1207** · 项目维护与实机验证
-- **Codex（OpenAI）** · 协作开发与测试
-
 ## 1.1.7 更新 / Changes
 
 本版包含公开版 1.1.2 之后的累计更新：

@@ -21,8 +21,3 @@
 解压完整包到游戏目录外的新文件夹，运行 AC8Workbench.exe，重新选定游戏和 Steam 安装路径。完整包适用于工作台管理的离线单人会话。
 
 第三方作者、上游项目和许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
-
-## 作者 / Authors
-
-- **TiiCiano1207** · 项目维护与实机验证
-- **Codex（OpenAI）** · 协作开发与测试
