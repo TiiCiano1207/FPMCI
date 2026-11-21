@@ -1,4 +1,4 @@
-return function(defs,mounts,log,borrowLoadout,borrowMissionLoadout,missionSp,ownsSelection)
+return function(defs,mounts,log,borrowLoadout,borrowMissionLoadout,missionSp,availableSelection)
     local byName={}
     for _,d in ipairs(defs.aircraft) do
         byName['BP_PlayerPlane_'..d.code..'_C']=d
@@ -38,8 +38,8 @@ return function(defs,mounts,log,borrowLoadout,borrowMissionLoadout,missionSp,own
         if world.NetDriver and world.NetDriver:IsValid() then return end
         if not tostring(world:GetFullName()):match('%.PL_Mission[%w_]*$') then return end
         local d,pair=missionSp.confirmedAircraft()
-        if d and d.missionWeapon then
-            if not ownsSelection(d,pair[1],pair[2]) then
+        if d then
+            if not availableSelection(d,pair) then
                 log('MISSION loadout skipped '..d.section..': confirmed weapon ownership not verified')
                 return
             end
@@ -87,7 +87,7 @@ return function(defs,mounts,log,borrowLoadout,borrowMissionLoadout,missionSp,own
             if world.NetDriver and world.NetDriver:IsValid() then return end
             pcall(markWorld,world,d)
             if d.target[1]==d.original[1] and d.target[2]==d.original[2] and d.target[3]==d.original[3] then
-                missionSp.prepare(actor,d,ownsSelection)
+                missionSp.prepare(actor,d,availableSelection)
                 return
             end
             mounts.prepare(d,actor)
@@ -102,7 +102,7 @@ return function(defs,mounts,log,borrowLoadout,borrowMissionLoadout,missionSp,own
                 entry.release=release
                 pending[id]=entry
             end
-            missionSp.prepare(actor,d,ownsSelection)
+            missionSp.prepare(actor,d,availableSelection)
         end)
         if not ok then log('BEGIN PRE failed: '..tostring(err)) end
     end)

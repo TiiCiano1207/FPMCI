@@ -10,26 +10,10 @@ return function(podID,log)
     local function same(a,b)
         return valid(a) and valid(b) and a:GetAddress()==b:GetAddress()
     end
-    local function getMission(pawn,d)
-        if not d then return end
-        local slot
-        local replacement=d.missionWeapon or (d.code=='PP0028_su35' and podID)
-        if replacement then
-            for i,id in ipairs(d.target) do
-                if id==replacement then slot=i;break end
-            end
-            if not slot then return end
-        elseif d.code=='PP0003_f04e' then
-            -- A stock F-4E carrying MGP provides a read-only comparison.
-            if pawn.PlaneSpWeaponID1~=podID and pawn.PlaneSpWeaponID2~=podID then return end
-        else
-            return
+    local function physicalSlot(d,weapon)
+        for i,id in ipairs(d.target) do
+            if id==weapon then return i end
         end
-        local world=pawn:GetWorld()
-        if not valid(world) or valid(world.NetDriver) then return end
-        local mission=world:GetFullName():match('%.(PL_Mission[%w_]*)$')
-        if not mission then return end
-        return world,mission,slot
     end
     local function isLocalPlayer(pawn,world)
         local instance=world.OwningGameInstance
@@ -39,22 +23,40 @@ return function(podID,log)
         local controller=players[1].PlayerController
         return valid(controller) and (same(controller.Pawn,pawn) or same(pawn.Controller,controller))
     end
-    local function confirm(d,first,second)
-        accepted={first,second,aircraft=d}
+    local function confirm(d,first,second,planeID)
+        accepted={first,second,aircraft=d,planeID=planeID}
     end
     local function confirmed(d)
         if accepted and accepted.aircraft==d then return accepted end
     end
     local function recoveryPair(d)
         local pair=confirmed(d)
-        local replacement=d.missionWeapon or (d.code=='PP0028_su35' and podID)
-        if pair and replacement and (pair[1]==replacement or pair[2]==replacement) and pair[1]~=pair[2] then
+        if not pair or pair[1]==pair[2] then return end
+        if d.code=='PP0028_su35' and (pair[1]==podID or pair[2]==podID) then
+            local slot=physicalSlot(d,podID)
+            if slot then return pair,slot end
+        elseif d.additions and (d.additions[pair[1]] or d.additions[pair[2]])
+            and physicalSlot(d,pair[1]) and (pair[2]==0 or physicalSlot(d,pair[2])) then
             return pair
         end
     end
+    local function getMission(pawn,d)
+        if not d then return end
+        local pair,slot=recoveryPair(d)
+        local su35Pod=d.code=='PP0028_su35' and physicalSlot(d,podID)
+        -- A stock F-4E carrying MGP provides a read-only comparison.
+        local stockPod=d.code=='PP0003_f04e' and (pawn.PlaneSpWeaponID1==podID or pawn.PlaneSpWeaponID2==podID)
+        if not pair and not su35Pod and not stockPod then return end
+        local world=pawn:GetWorld()
+        if not valid(world) or valid(world.NetDriver) then return end
+        local mission=world:GetFullName():match('%.(PL_Mission[%w_]*)$')
+        if mission then return world,mission,pair,slot end
+    end
     local function confirmedAircraft()
-        local pair=accepted and recoveryPair(accepted.aircraft)
-        if pair then return pair.aircraft,pair end
+        if accepted then
+            local pair,slot=recoveryPair(accepted.aircraft)
+            if pair and not slot then return pair.aircraft,pair end
+        end
     end
     local function repair(pawn,d,first,second,pair)
         local ok,why=pcall(function()
@@ -70,8 +72,8 @@ return function(podID,log)
         end
         log(string.format('MISSION SP repaired %s %d,%d -> %d,%d',d.section,first,second,pair[1],pair[2]))
     end
-    local function prepare(pawn,d,ownsSelection)
-        local world,mission,slot=getMission(pawn,d)
+    local function prepare(pawn,d,availableSelection)
+        local world,mission,pair,slot=getMission(pawn,d)
         if not world then return end
         local first,second=pawn.PlaneSpWeaponID1,pawn.PlaneSpWeaponID2
         local localPlayer=isLocalPlayer(pawn,world)
@@ -86,29 +88,37 @@ return function(podID,log)
             configs[i]=string.format('%s/%s/%s',tostring(row.SpWeaponID),tostring(id),
                 valid(class) and (class:GetFullName():match('[^%. /]+$') or '?') or '-')
         end)
-        local pair=recoveryPair(d)
         log(string.format('MISSION SP input %s map=%s local=%s native=%s,%s confirmed=%s mounts=%s',
             d.section,mission,tostring(localPlayer),tostring(first),tostring(second),
-            slot and pair and table.concat(pair,',') or '-',table.concat(configs,',')))
-        if not slot or not localPlayer or not pair then return end
-        if d.missionWeapon then
-            if first==pair[1] and second==pair[2] then return end
-            local function compatible(id)
-                return id==0 or id==pair[1] or id==pair[2] or id==d.original[slot]
-            end
-            if not compatible(first) or not compatible(second) then
-                log('MISSION SP skipped '..d.section..': live selection differs from confirmation')
-                return
-            end
-            if not nativeIDs[pair[1]] or (pair[2]~=0 and not nativeIDs[pair[2]]) then
-                log('MISSION SP skipped '..d.section..': confirmed weapon class missing')
-                return
-            end
-            if not ownsSelection(d,pair[1],pair[2]) then
+            pair and table.concat(pair,',') or '-',table.concat(configs,',')))
+        if not localPlayer or not pair then return end
+        if not slot then
+            local ready=availableSelection(d,pair)
+            if not ready then
                 log('MISSION SP skipped '..d.section..': confirmed weapon ownership not verified')
                 return
             end
-            repair(pawn,d,first,second,pair)
+            if first==ready[1] and second==ready[2] then return end
+            local compatible={[0]=true,[pair[1]]=true,[pair[2]]=true}
+            for i,id in ipairs(d.target) do
+                if id==pair[1] or id==pair[2] then
+                    compatible[d.original[i]]=true
+                    if d.catalog then compatible[d.catalog[i]]=true end
+                end
+            end
+            if not compatible[first] or not compatible[second] then
+                log('MISSION SP skipped '..d.section..': live selection differs from confirmation')
+                return
+            end
+            if not nativeIDs[ready[1]] or (ready[2]~=0 and not nativeIDs[ready[2]]) then
+                log('MISSION SP skipped '..d.section..': confirmed weapon class missing')
+                return
+            end
+            if ready~=pair then
+                log('MISSION SP owned selection '..d.section..' confirmed='..table.concat(pair,',')
+                    ..' available='..table.concat(ready,','))
+            end
+            repair(pawn,d,first,second,ready)
             return
         end
         if first==podID or second==podID then return end

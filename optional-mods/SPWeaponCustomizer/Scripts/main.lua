@@ -74,15 +74,15 @@ local migrations={aircraft={}}
 for _,d in ipairs(defs.aircraft) do
     local candidates=balance.additions[d.section]
     if d.catalog or candidates then
-        local additions={}
-        for _,name in ipairs(candidates or {}) do additions[defs.weapons[name]]=true end
+        d.additions={}
+        for _,name in ipairs(candidates or {}) do d.additions[defs.weapons[name]]=true end
         local migration={code=d.code,section=d.section,original=d.original,target=d.catalog or d.original,
-            legacySlot=d.legacySlot,legacyLoadoutIDs=d.legacyLoadoutIDs,loadout=d,additions=additions}
+            legacySlot=d.legacySlot,legacyLoadoutIDs=d.legacyLoadoutIDs,loadout=d,additions=d.additions}
         if d.code=='PP0028_su35' then migration.podID=defs.weapons.MGP end
         migrations.aircraft[#migrations.aircraft+1]=migration
     end
 end
-local updateOwnership,ownsSelection=dofile(dir.."ownership.lua")(migrations,dofile(dir.."plane_ids.lua"),log,missionSp.confirmed)
+local updateOwnership,availableSelection=dofile(dir.."ownership.lua")(migrations,dofile(dir.."plane_ids.lua"),log,missionSp.confirmed)
 local mounts=dofile(dir.."mounts.lua")(mountPaths,log,modelData)
 
 local pods=dofile(dir.."pod_visual.lua")(mounts,log)
@@ -182,7 +182,7 @@ local function borrowMissionLoadout(d)
         if entry.definition==d and entry.done and alive(entry) then return borrowLoadout(d) end
     end
 end
-local endMissionLoadout=dofile(dir.."beginplay.lua")(defs,mounts,log,borrowLoadout,borrowMissionLoadout,missionSp,ownsSelection)
+local endMissionLoadout=dofile(dir.."beginplay.lua")(defs,mounts,log,borrowLoadout,borrowMissionLoadout,missionSp,availableSelection)
 local function restore()
     mounts.restore()
     for _,e in pairs(tracked) do restoreEntry(e) end
@@ -229,7 +229,7 @@ local function menuOnline()
 end
 local function menuApply(d,target)
     assert(not menuOnline(),'Online play is not supported')
-    if d.code=='PP0028_su35' or d.missionWeapon then endMissionLoadout() end
+    if d.additions then endMissionLoadout() end
     local entries={}
     local function collect()
         for id,e in pairs(tracked) do

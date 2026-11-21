@@ -159,7 +159,7 @@ return function(dir,defs,paths,log,balance)
                 local target=plan(current,d.catalog or d.original,tonumber(first),tonumber(second),allowedByCode[d.code],d.nativeSlots)
                 if not balance.additions[d.section] then
                     assert(commit(true),'Game declined original loadout')
-                    if not mode then confirmMission(d,tonumber(first),tonumber(second)) end
+                    if not mode then confirmMission(d,tonumber(first),tonumber(second),tonumber(plane)) end
                     return
                 end
                 local afterCommit
@@ -172,7 +172,7 @@ return function(dir,defs,paths,log,balance)
                 if not called then error(accepted) end
                 if not accepted then error('Game declined confirmation or selection changed') end
                 rollback=nil
-                if not mode then confirmMission(d,tonumber(first),tonumber(second)) end
+                if not mode then confirmMission(d,tonumber(first),tonumber(second),tonumber(plane)) end
                 if afterCommit then
                     local finished,finishError=pcall(afterCommit)
                     if not finished then log('MENU post-confirm update failed: '..tostring(finishError)) end

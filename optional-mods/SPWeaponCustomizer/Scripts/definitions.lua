@@ -75,7 +75,7 @@ return {
   {code="PP0029_m31b",section="MiG-31B",row="m31b",original={16,23,21}},
   {code="PP0030_su33",section="Su-33",row="su33",original={21,22,15}},
   {code="PP0031_e06b",section="EA-6B",row="e06b",original={40,18,34}},
-  {code="PP0032_f18e",section="F/A-18E",row="f18e",original={6,27,21},missionWeapon=5},
+  {code="PP0032_f18e",section="F/A-18E",row="f18e",original={6,27,21}},
   {code="PP0034_f14a",section="F-14A",row="f14a",original={15,23,30}},
   {code="PP0038_adfx02_L001",section="ADFX-02",row="adfx02",original={33,28,40}},
  }

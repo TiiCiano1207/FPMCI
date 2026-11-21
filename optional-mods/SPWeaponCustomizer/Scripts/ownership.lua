@@ -14,20 +14,21 @@ return function(defs,planeIDs,log,confirmed)
         byCode[d.code]=d
     end
     for id,code in pairs(planeIDs) do if byCode[code] then byPlane[id]=byCode[code] end end
-    if next(byPlane)==nil then return function()end,function()return false end end
+    if next(byPlane)==nil then return function()end,function()end end
     local function identity(o)
         local ok,name=pcall(function()if o and o:IsValid() then return o:GetFullName()end end)
         return ok and name or nil
     end
-    local function confirmedAdditions(d)
+    local function confirmedAdditions(d,planeID)
         if d.loadout and d.additions and confirmed then
             local pair=confirmed(d.loadout)
-            if pair and (d.additions[pair[1]] or d.additions[pair[2]]) then return pair end
+            if pair and (not planeID or not pair.planeID or pair.planeID==planeID)
+                and (d.additions[pair[1]] or d.additions[pair[2]]) then return pair end
         end
     end
-    local function changed(d)
+    local function changed(d,pair)
         for i=1,3 do if d.target[i]~=d.original[i] then return true end end
-        return d.podID~=nil or confirmedAdditions(d)~=nil
+        return d.podID~=nil or pair~=nil
     end
     local function checkedCount(array,limit,label)
         local count=array:GetArrayNum()
@@ -52,8 +53,9 @@ return function(defs,planeIDs,log,confirmed)
         end
         return owned,array,count
     end
-    local function ownsSelection(d,first,second)
-        local found=false
+    local function availableSelection(d,pair)
+        local first,second=pair[1],pair[2]
+        local found,ownsFirst,ownsSecond=false,true,true
         for _,entry in pairs(saves) do
             if identity(entry.object)==entry.name then
                 local campaign=entry.object.CampaignSaveData
@@ -62,15 +64,19 @@ return function(defs,planeIDs,log,confirmed)
                 for index=1,count do
                     local row=readItem(records,index,count,MAX_AIRCRAFT_RECORDS,'AircraftTypeRecords')
                     local aircraft=byPlane[row.PlaneID]
-                    if aircraft and aircraft.loadout==d then
+                    if aircraft and aircraft.loadout==d and (not pair.planeID or row.PlaneID==pair.planeID) then
                         local owned=readOwnership(row)
-                        if not owned[first] or (second~=0 and not owned[second]) then return false end
+                        ownsFirst=ownsFirst and owned[first]==true
+                        ownsSecond=ownsSecond and (second==0 or owned[second]==true)
                         found=true
                     end
                 end
             end
         end
-        return found
+        if not found then return end
+        if ownsFirst and ownsSecond then return pair end
+        if ownsFirst then return {first,0} end
+        if ownsSecond and second~=0 then return {second,0} end
     end
     local function remember(o,fresh)
         local name=identity(o)
@@ -94,7 +100,8 @@ return function(defs,planeIDs,log,confirmed)
         for recordIndex=1,recordCount do
             local row=readItem(records,recordIndex,recordCount,MAX_AIRCRAFT_RECORDS,'AircraftTypeRecords')
             local d=byPlane[row.PlaneID]
-            if d and changed(d) then
+            local pair=d and confirmedAdditions(d,row.PlaneID)
+            if d and changed(d,pair) then
                 local owned,array,count=readOwnership(row)
                 local pending={};local vanilla={}
                 for _,id in ipairs(d.original) do vanilla[id]=true end
@@ -113,7 +120,6 @@ return function(defs,planeIDs,log,confirmed)
                 end
                 -- Keep the saved Su-35 pod migration. For other additions,
                 -- require a fresh confirmation and a paid physical slot.
-                local pair=confirmedAdditions(d)
                 for i,id in ipairs(d.loadout and d.loadout.target or {}) do
                     local selected=pair and d.additions[id] and (id==pair[1] or id==pair[2])
                     if (selected or id==d.podID) and not owned[id] and not pending[id] and not vanilla[id]
@@ -144,7 +150,7 @@ return function(defs,planeIDs,log,confirmed)
         -- Only background callbacks advance the frame-based fallback clock.
         if force==false then tick=tick+1 end
         local active=false
-        for _,d in pairs(byCode) do if changed(d) then active=true;break end end
+        for _,d in pairs(byCode) do if changed(d,confirmedAdditions(d)) then active=true;break end end
         for id,e in pairs(saves) do
             if force~=false or tick>=e.nextCheck then
                 e.nextCheck=tick+FALLBACK_CHECKS
@@ -166,5 +172,5 @@ return function(defs,planeIDs,log,confirmed)
             end
         end
     end
-    return update,ownsSelection
+    return update,availableSelection
 end
