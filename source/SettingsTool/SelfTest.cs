@@ -19,7 +19,7 @@ namespace AC8Settings {
     var app=new Application();var ui=new SettingsWindow(root,true);
     ui.Window.Left=-12000;ui.Window.Top=-12000;ui.Window.WindowStartupLocation=WindowStartupLocation.Manual;ui.Window.ShowInTaskbar=false;ui.Window.ShowActivated=false;ui.Window.Show();
     ui.ShowPage(8);ui.Window.UpdateLayout();
-    Check(((TextBlock)ui.Window.FindName("PageTitle")).Text=="导弹强化","Missile page not renamed.");
+    Check(((TextBlock)ui.Window.FindName("PageTitle")).Text=="机体加强","Missile page not renamed.");
     var fuseBoxes=Children(ui.Window).OfType<CheckBox>().Where(x=>AutomationProperties.GetName(x).EndsWith(" 近炸增强")).ToArray();
     Check(fuseBoxes.Length==11,"Expected eleven per-type fuse switches.");
     fuseBoxes.Single(x=>AutomationProperties.GetName(x)=="MSL 近炸增强").IsChecked=true;
@@ -102,7 +102,8 @@ namespace AC8Settings {
     stateChoice.IsDropDownOpen=false;
     var focusTrigger=startButton.Template.Triggers.OfType<Trigger>().Single(x=>x.Property==UIElement.IsKeyboardFocusedProperty);
     Check(focusTrigger.Setters.OfType<Setter>().Any(x=>x.TargetName=="Surface"&&x.Property==Border.BorderBrushProperty&&((SolidColorBrush)x.Value).Color==Color.FromRgb(0x14,0x2F,0x3C)),"Primary action lacks a contrasting keyboard focus border.");
-    ui.ShowPage(7);ui.Window.UpdateLayout();
+    ((Button)ui.Window.FindName("InstallGuide")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));ui.Window.UpdateLayout();
+    Check(((TextBlock)ui.Window.FindName("PageTitle")).Text=="安装说明","Footer guide did not open.");
     Check(Children((DependencyObject)ui.Window.FindName("PageBody")).OfType<Button>().Count()==1,"Help includes non-install actions.");
     ui.ShowPage(0);ui.Window.UpdateLayout();
     var input=Children(ui.Window).OfType<TextBox>().Single(x=>AutomationProperties.GetName(x)=="鼠标灵敏度数值");
@@ -146,7 +147,9 @@ namespace AC8Settings {
     Check(((TextBlock)ui.Window.FindName("ModName")).Text=="FPMCI","MOD name is missing.");
     Check(ui.Window.Title.Contains("FPMCI"),"Window title did not adopt FPMCI.");
     var navigation=(StackPanel)ui.Window.FindName("Navigation");
-    Check(navigation.Children.Count==9,"Removed diagnostics page still occupies navigation.");
+    bool aceInstalled=AcePilotsSettings.FindInstalled(root)!=null;
+    Check(navigation.Children.OfType<Button>().Count(b=>b.Visibility==Visibility.Visible)==(aceInstalled?9:8),"Unexpected sidebar entries.");
+    if(aceInstalled)CheckAcePilotsPage(ui,root,navigation);
     Check(!Children(navigation).OfType<TextBlock>().Any(x=>x.Text.Contains("诊断")||x.Text.Contains("分析")),"Diagnostics/analysis entry remains visible.");
     foreach(int pageIndex in Enumerable.Range(0,9)){
      ui.ShowPage(pageIndex);ui.Window.UpdateLayout();
@@ -156,9 +159,65 @@ namespace AC8Settings {
     foreach(var numeric in Children(ui.Window).OfType<TextBox>().Where(x=>AutomationProperties.GetName(x).EndsWith("数值")))CheckTextFits(numeric);
     Check(startButton.TranslatePoint(new Point(startButton.ActualWidth,startButton.ActualHeight),ui.Window).X<=ui.Window.ActualWidth,"Start action overflows narrow window.");
     ui.Window.Close();
-    File.WriteAllText(report,"PASS\r\nGuidance UI: saved values, invalid input, stock/default resets and advanced difficulty save passed.\r\nUI numeric validation, numeric/color/FOV save, camera selection, first-person toggle/response and page defaults.",Encoding.UTF8);
+    File.WriteAllText(report,"PASS\r\nGuidance UI: saved values, invalid input, stock/default resets and advanced difficulty save passed.\r\nUI numeric validation, numeric/color/FOV save, camera selection, first-person toggle/response and page defaults."+(aceInstalled?"\r\nEnemy AI: flare limit visibility, input validation, persistence, preset independence, backup restore and scroll position passed.":""),Encoding.UTF8);
     return 0;
    }catch(Exception ex){File.WriteAllText(report,"FAIL\r\n"+ex,Encoding.UTF8);return 1;}
+  }
+  static void CheckAcePilotsPage(SettingsWindow ui,string root,StackPanel navigation){
+   string path=AcePilotsSettings.ConfigPath(root);
+   byte[] initial=File.ReadAllBytes(path);
+   var state=new ConfigStore(root).State;
+   var entry=navigation.Children.OfType<Button>().Single(b=>AutomationProperties.GetName(b)==AcePilotsSettings.Title);
+   entry.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+   ui.Window.UpdateLayout();
+   Check(Equals(entry.Tag,"selected")&&((TextBlock)ui.Window.FindName("PageTitle")).Text==AcePilotsSettings.Title,"Enemy AI sidebar does not select the embedded page.");
+   var panel=(StackPanel)ui.Window.FindName("PageBody");
+   var sliders=Children(panel).OfType<Slider>().ToArray();
+   Check(sliders.Length==9&&Children(panel).OfType<CheckBox>().Count()==9,"Embedded page misses AI parameters or the module switch.");
+   var action=Children(panel).OfType<Button>().Single(b=>Equals(b.Content,"极限"));
+   action.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+   var rank=sliders.Single(s=>AutomationProperties.GetName(s)=="飞行员等级");
+   Check(Equals(action.Tag,"primary")&&rank.Value==5,"Max preset did not update pilot rank.");
+   var saveButton=(Button)ui.Window.FindName("Save");
+   Check(saveButton.IsEnabled&&initial.SequenceEqual(File.ReadAllBytes(path)),"Preset failed dirty tracking or changed the INI before saving.");
+   var flares=Children(panel).OfType<CheckBox>().Single(b=>AutomationProperties.GetName(b)=="允许使用热焰弹");
+   var cap=Children(panel).OfType<TextBox>().Single(b=>AutomationProperties.GetName(b)=="每架飞机累计上限数值");
+   Check(cap.IsVisible&&cap.Text==state.AcePilots[AcePilotsSettings.FlareLimitIndex].ToString(System.Globalization.CultureInfo.InvariantCulture),"Flare limit did not load when enabled.");
+   cap.Text="0";
+   foreach(string invalid in new[]{"","-1","2.5","2147483648"}){
+    cap.Text=invalid;
+    saveButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    Check(initial.SequenceEqual(File.ReadAllBytes(path)),"Invalid flare limit reached disk.");
+   }
+   var off=Children(panel).OfType<Button>().Single(b=>Equals(b.Content,"关闭"));
+   off.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+   Check(!cap.IsVisible&&flares.IsChecked==false,"Flare limit visible while disabled.");
+   action.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+   Check(cap.IsVisible&&cap.Text=="0","Preset or a hidden invalid edit changed the flare limit.");
+   CheckTextFits(cap);
+   ui.Window.Width=980;ui.Window.UpdateLayout();CheckTextFits(cap);
+   ui.Window.Width=1160;ui.Window.UpdateLayout();
+   rank.Value=4;
+   Check(!Equals(action.Tag,"primary")&&Children(panel).OfType<TextBlock>().Any(t=>t.IsVisible&&t.Text=="自定义"),"Manual adjustment did not select Custom.");
+   ui.ShowPage(0);ui.ShowPage(AcePilotsSettings.Page);
+   ui.Window.Width=980;ui.Window.UpdateLayout();
+   var scroll=(ScrollViewer)ui.Window.FindName("ContentScroll");
+   scroll.ScrollToVerticalOffset(scroll.ScrollableHeight*.7);
+   ui.Window.UpdateLayout();
+   double beforeSave=scroll.VerticalOffset;
+   Check(beforeSave>0,"Scroll fixture is not below the fold.");
+   saveButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+   ui.Window.UpdateLayout();
+   Check(Math.Abs(scroll.VerticalOffset-beforeSave)<1,"Saving settings moved the current page.");
+   ui.ShowPage(1);ui.Window.UpdateLayout();
+   Check(scroll.VerticalOffset==0,"Navigation did not reset the page scroll.");
+   ui.ShowPage(AcePilotsSettings.Page);ui.Window.Width=1160;ui.Window.UpdateLayout();
+   var saved=new ConfigStore(root).State.AcePilots;
+   Check(saved[0]==4&&saved[2]==20&&saved[3]==1000&&saved.Skip(12).Take(5).SequenceEqual(state.AcePilots.Skip(12).Take(5)),"AI save lost a draft, preset value, or scope setting.");
+   Check(saved[AcePilotsSettings.FlareLimitIndex]==0&&File.ReadAllText(path).Contains("FlareMaxTotal=0"),"Flare limit did not persist.");
+   Check(File.ReadAllText(path).Contains("Preset=Custom")&&!saveButton.IsEnabled,"AI save did not write Custom and reset dirty state.");
+   ((Button)ui.Window.FindName("RestoreBackup")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+   Check(initial.SequenceEqual(File.ReadAllBytes(path)),"AI backup restore changed the original INI.");
   }
   static void Check(bool condition,string message){if(!condition)throw new Exception(message);}
   static void CheckTextFits(TextBox input){

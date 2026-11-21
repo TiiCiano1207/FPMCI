@@ -54,6 +54,11 @@ function Assert-AC8IntegratedFOV([string]$ModPath) {
  }
  if($seen.Count -ne 3){throw 'Incomplete AC8CockpitFOV configuration; retained for review.'}
 }
+function Test-AC8ExtraModName([string]$Name) {
+ return ($Name -match '^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$' -and !$Name.EndsWith('.') -and
+  $Name -notmatch '^(CON|PRN|AUX|NUL|COM[0-9]|LPT[0-9])(?:\.|$)' -and
+  $Name -notin @('AC8MouseAim','AC8SourceInit','AC8CockpitFOV','AC8PropNav','AC8ProximityFuse','shared'))
+}
 function Invoke-AC8Cleanup {
  param([string]$GameRoot,[string]$BackupRoot,$State,[switch]$RecoverHistorical,[switch]$CheckOnly)
  if(Get-Process -Name AceCombat8 -ErrorAction SilentlyContinue){throw 'Close AC8 normally before cleanup.'}
@@ -71,9 +76,24 @@ function Invoke-AC8Cleanup {
  $present=@($names | Where-Object {Test-Path -LiteralPath (Join-Path $w64 $_)})
  if(!$present.Count){Write-Host 'CLEANUP COMPLETE: all three deployed items are absent.';return $null}
  if(!$State -and !$RecoverHistorical){throw ('No session record, but residual items exist: '+($present -join ', ')+'. Use Recover-Cleanup.cmd after reviewing ownership.')}
+ # Only recorded names may extend the built-in ownership allowlist.
+ $extraNames=@()
+ $extraHashes=@{}
+ foreach($mod in $State.ExtraMods){
+  if(!(Test-AC8ExtraModName $mod.Name) -or $mod.Name -in $extraNames){throw 'Invalid extra MOD session record.'}
+  $extraNames+= $mod.Name
+  foreach($file in $mod.Files){
+   $key='Mods\'+$mod.Name+'\'+$file.Path
+   if($extraHashes.ContainsKey($key) -or $file.SHA256 -notmatch '^[a-f0-9]{64}$'){throw 'Invalid extra MOD file record.'}
+   $extraHashes[$key]=$file.SHA256
+  }
+ }
+ $allowedMods=@('AC8MouseAim','AC8SourceInit','AC8CockpitFOV')+$extraNames
+ if($State.SharedLibrary){$allowedMods+='shared'}
  $ownedRoot=Join-Path $w64 'ue4ss'
  if(Test-Path -LiteralPath $ownedRoot){
   if(!(Test-Path -LiteralPath $ownedRoot -PathType Container)){throw 'ue4ss is not a directory; manual review required.'}
+  Assert-AC8NoLinks $ownedRoot -Tree
   $marker=Join-Path $ownedRoot 'AC8SourceInit-owner.txt'
   if(!(Test-Path -LiteralPath $marker -PathType Leaf)){throw 'Ownership marker missing. Unknown UE4SS directory retained for manual review.'}
   $id=(Get-Content -LiteralPath $marker -Raw -Encoding UTF8).Trim()
@@ -85,10 +105,15 @@ function Invoke-AC8Cleanup {
   }
   $mods=Join-Path $ownedRoot 'Mods'
   if(Test-Path -LiteralPath $mods){
-   $other=@(Get-ChildItem -LiteralPath $mods -Directory -Force | Where-Object {$_.Name -notin @('AC8MouseAim','AC8SourceInit','AC8CockpitFOV')})
+   $other=@(Get-ChildItem -LiteralPath $mods -Directory -Force | Where-Object {$_.Name -notin $allowedMods})
    if($other.Count){throw ('Other UE4SS mods found; manual review required: '+(($other | ForEach-Object {$_.Name}) -join ', '))}
    $otherFiles=@(Get-ChildItem -LiteralPath $mods -File -Force | Where-Object Name -ne 'mods.txt')
    if($otherFiles.Count){throw ('Other UE4SS mod files found; retained for review: '+(($otherFiles | ForEach-Object Name) -join ', '))}
+   $shared=Join-Path $mods 'shared'
+   if(Test-Path -LiteralPath $shared){
+    $unknownShared=@(Get-AC8Snapshot $shared | Where-Object {$_.Path -notin $State.SharedLibrary.Path})
+    if($unknownShared.Count){throw 'Unknown UE4SS shared files found; retained for review.'}
+   }
    $fov=Join-Path $mods 'AC8CockpitFOV'
    if(Test-Path -LiteralPath $fov){Assert-AC8IntegratedFOV $fov}
   }
@@ -110,7 +135,11 @@ function Invoke-AC8Cleanup {
     throw 'Unknown steam_appid.txt contents; retained for manual review.'
    }
   }
-  $plans+= [pscustomobject]@{Name=$name;Files=$snapshot;Removed=$false}
+  $archiveFiles=$snapshot
+  if($name -eq 'ue4ss' -and $extraHashes.Count){
+   $archiveFiles=@($snapshot | Where-Object {$extraHashes[$_.Path] -ne $_.SHA256})
+  }
+  $plans+= [pscustomobject]@{Name=$name;Files=$snapshot;ArchiveFiles=$archiveFiles;Removed=$false}
  }
  if($CheckOnly){Write-Host ('CLEANUP CHECK: recognized items: '+($present -join ', ')+'. No files changed.');return $null}
  New-Item -ItemType Directory -Path $backup -Force | Out-Null
@@ -124,8 +153,17 @@ function Invoke-AC8Cleanup {
  foreach($plan in $plans){
   $src=Join-Path $w64 $plan.Name
   $dst=Join-Path $archive $plan.Name
-  Copy-Item -LiteralPath $src -Destination $dst -Recurse -Force
-  Assert-AC8Snapshot $dst $plan.Files
+  if($plan.ArchiveFiles.Count -eq $plan.Files.Count){
+   Copy-Item -LiteralPath $src -Destination $dst -Recurse -Force
+  }else{
+   [void][IO.Directory]::CreateDirectory($dst)
+   foreach($file in $plan.ArchiveFiles){
+    $target=Join-Path $dst $file.Path
+    [void][IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($target))
+    Copy-Item -LiteralPath (Join-Path $src $file.Path) -Destination $target
+   }
+  }
+  Assert-AC8Snapshot $dst $plan.ArchiveFiles
  }
  $report.Status='backup-verified';Write-AC8Json $report $reportPath
  foreach($plan in $plans){

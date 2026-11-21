@@ -20,8 +20,9 @@ namespace AC8Settings {
   public Dictionary<string,string> Keys=new Dictionary<string,string>();
   public string Color="#70FF90";
   public bool FrameGenerationEnabled;
-  public ConfigState Copy(){return new ConfigState{Values=new Dictionary<string,double>(Values),Keys=new Dictionary<string,string>(Keys),Color=Color,FrameGenerationEnabled=FrameGenerationEnabled};}
-  public string Signature(){return string.Join("|",Values.OrderBy(x=>x.Key).Select(x=>x.Key+"="+x.Value.ToString("R",CultureInfo.InvariantCulture)))+";"+string.Join("|",Keys.OrderBy(x=>x.Key).Select(x=>x.Key+"="+x.Value))+";"+Color.ToUpperInvariant()+";frame_generation="+(FrameGenerationEnabled?"1":"0");}
+  internal double[] AcePilots=AcePilotsSettings.Defaults();
+  public ConfigState Copy(){return new ConfigState{Values=new Dictionary<string,double>(Values),Keys=new Dictionary<string,string>(Keys),Color=Color,FrameGenerationEnabled=FrameGenerationEnabled,AcePilots=(double[])AcePilots.Clone()};}
+  public string Signature(){return string.Join("|",Values.OrderBy(x=>x.Key).Select(x=>x.Key+"="+x.Value.ToString("R",CultureInfo.InvariantCulture)))+";"+string.Join("|",Keys.OrderBy(x=>x.Key).Select(x=>x.Key+"="+x.Value))+";"+Color.ToUpperInvariant()+";frame_generation="+(FrameGenerationEnabled?"1":"0")+";ace_pilots="+string.Join(",",AcePilots.Select(v=>v.ToString("R",CultureInfo.InvariantCulture)));}
  }
  public sealed class ConfigStore {
   public static readonly Rule[] Rules={
@@ -31,6 +32,7 @@ namespace AC8Settings {
    new Rule("hud_connector","方向刻度",0,1,1,true),
    new Rule("hud_link_always","持续显示方向刻度",0,1,0,true),
    new Rule("hud_opacity","准星不透明度",.15,1,1),
+   new Rule("flight_recording","保存飞行记录",0,1,0,true),
    new Rule("hud_boresight","机头参考十字",0,1,1,true),
    new Rule("control_mode","默认飞控模式",0,3,0,true),
    new Rule("model_assist","模型辅助",0,1,1,true),
@@ -86,14 +88,21 @@ namespace AC8Settings {
   }
   public void Load(){
    if(!IsPackage(Root))throw new InvalidOperationException("请选择完整的 AC8 MOD 文件夹，需包含设置文件和键位定义。");
-   original.Clear();
-   foreach(var f in Files)original[f]=File.Exists(Path.Combine(Root,f))?File.ReadAllBytes(Path.Combine(Root,f)):null;
+   original=ReadFiles(AcePilotsSettings.ConfigPath(Root));
    State=Parse(original);
    try{var info=new JavaScriptSerializer().DeserializeObject(File.ReadAllText(Path.Combine(Root,"package-info.json"))) as Dictionary<string,object>;Version=(string)info["version"];}catch{}
   }
+  Dictionary<string,byte[]> ReadFiles(string acePath){
+   var files=Files.ToDictionary(f=>f,f=>ReadBytes(Path.Combine(Root,f)));
+   files[AcePilotsSettings.FileName]=ReadBytes(acePath);
+   return files;
+  }
+  static byte[] ReadBytes(string path){return File.Exists(path)?File.ReadAllBytes(path):null;}
   static string Text(byte[] b){if(b==null)return "";return Encoding.UTF8.GetString(b).TrimStart('\uFEFF');}
   public ConfigState Parse(Dictionary<string,byte[]> data){
    var s=Defaults();var seen=new HashSet<string>();
+   byte[] ace;
+   if(data.TryGetValue(AcePilotsSettings.FileName,out ace))s.AcePilots=AcePilotsSettings.Read(ace);
    foreach(string raw in Text(data["MouseAim-Settings.ini"]).Split('\n')){
     var line=raw.Trim();if(line.Length==0||line.StartsWith(";")||line.StartsWith("#"))continue;
     var m=Regex.Match(line,@"^([a-z_]+)\s*=\s*([0-9]+(?:\.[0-9]+)?)$");
@@ -189,21 +198,22 @@ namespace AC8Settings {
    text="; Per-player-missile enhancement; next launch only.\r\n";
    foreach(var r in Guidance.AllFuseRules)text+=r.Key.Substring(5)+"="+s.Values[r.Key].ToString("0.###",CultureInfo.InvariantCulture)+"\r\n";
    data["ProximityFuse.ini"]=Encode(text);
+   if(!s.AcePilots.SequenceEqual(State.AcePilots))
+    data[AcePilotsSettings.FileName]=AcePilotsSettings.Write(original[AcePilotsSettings.FileName],s.AcePilots);
    return data;
   }
   static bool Same(byte[] a,byte[] b){return a==null?b==null:b!=null&&a.SequenceEqual(b);}
-  void AssertUnchanged(){
-   foreach(string f in Files){
-    string p=Path.Combine(Root,f);byte[] now=File.Exists(p)?File.ReadAllBytes(p):null;
-    if(!Same(original[f],now))throw new InvalidOperationException("配置已被其他程序修改。请先重新读取配置，再保存，避免覆盖新设置。");
-   }
+  void AssertUnchanged(string acePath){
+   var now=ReadFiles(acePath);
+   if(now.Any(file=>!Same(original[file.Key],file.Value)))
+    throw new InvalidOperationException("配置已被其他程序修改。请先重新读取配置，再保存，避免覆盖新设置。");
   }
   public static string Hash(byte[] data){using(var h=SHA256.Create())return BitConverter.ToString(h.ComputeHash(data)).Replace("-","");}
-  string MakeBackup(){
+  string MakeBackup(bool includeAcePilots){
    string folder=Path.Combine(Root,"settings-backups",DateTime.Now.ToString("yyyyMMdd-HHmmss-fff")+"-"+Guid.NewGuid().ToString("N").Substring(0,6));
    Directory.CreateDirectory(folder);
    var manifest=new Dictionary<string,string>();
-   foreach(string f in Files){
+   foreach(string f in includeAcePilots?Files.Concat(new[]{AcePilotsSettings.FileName}):Files){
     byte[] b=original[f];manifest[f]=b==null?"MISSING":Hash(b);
     if(b!=null)File.WriteAllBytes(Path.Combine(folder,f),b);
    }
@@ -229,15 +239,23 @@ namespace AC8Settings {
    }
   }
   void CommitLocked(Dictionary<string,byte[]> data){
-   AssertUnchanged();MakeBackup();var applied=new List<string>();
+   string acePath=AcePilotsSettings.ConfigPath(Root);
+   var paths=Files.ToDictionary(f=>f,f=>Path.Combine(Root,f));
+   if(data.ContainsKey(AcePilotsSettings.FileName)){
+    if(acePath==null)throw new InvalidOperationException("敌方AI增强已移出工作台。请重新读取配置。");
+    paths.Add(AcePilotsSettings.FileName,acePath);
+   }
+   AssertUnchanged(acePath);
+   MakeBackup(acePath!=null);
+   var applied=new List<string>();
    try{
-    foreach(string f in Files){
-     string path=Path.Combine(Root,f);applied.Add(f);
-     if(data[f]==null){if(File.Exists(path))File.Delete(path);}else AtomicWrite(path,data[f]);
+    foreach(var file in paths){
+     if(data[file.Key]==null){if(File.Exists(file.Value))File.Delete(file.Value);}else AtomicWrite(file.Value,data[file.Key]);
+     applied.Add(file.Key);
     }
    }catch{
     foreach(string f in applied.AsEnumerable().Reverse()){
-     string path=Path.Combine(Root,f);
+     string path=paths[f];
      if(original[f]==null){if(File.Exists(path))File.Delete(path);}else AtomicWrite(path,original[f]);
     }
     throw;
@@ -249,11 +267,14 @@ namespace AC8Settings {
    return Regex.Match(Text(original[Files[0]]),pattern).Value!=Regex.Match(Text(now[Files[0]]),pattern).Value;
   }
   public bool Refresh(ConfigState pending){
-   var now=Files.ToDictionary(f=>f,f=>File.Exists(Path.Combine(Root,f))?File.ReadAllBytes(Path.Combine(Root,f)):null);
-   if(Files.All(f=>Same(original[f],now[f])))return false;
+   string acePath=AcePilotsSettings.ConfigPath(Root);
+   var now=ReadFiles(acePath);
+   if(now.All(file=>Same(original[file.Key],file.Value)))return false;
    var latest=Parse(now);
    // External changes win conflicts. Keep unrelated edits in the menu.
    foreach(var r in Rules.Concat(FovRules).Concat(Guidance.Rules).Concat(Guidance.AllFuseRules))if(latest.Values[r.Key]!=State.Values[r.Key]||RuntimeTagChanged(r.Key,now))pending.Values[r.Key]=latest.Values[r.Key];
+   for(int i=0;i<latest.AcePilots.Length;i++)
+    if(acePath==null||latest.AcePilots[i]!=State.AcePilots[i])pending.AcePilots[i]=latest.AcePilots[i];
    foreach(var a in Actions)if(latest.Keys[a.Name]!=State.Keys[a.Name])pending.Keys[a.Name]=latest.Keys[a.Name];
    if(!string.Equals(latest.Color,State.Color,StringComparison.OrdinalIgnoreCase))pending.Color=latest.Color;
    if(latest.FrameGenerationEnabled!=State.FrameGenerationEnabled)pending.FrameGenerationEnabled=latest.FrameGenerationEnabled;
@@ -269,7 +290,9 @@ namespace AC8Settings {
    string folder=LatestBackup();if(folder==null)throw new InvalidOperationException("还没有备份。首次保存设置时会自动建立备份。");
    var manifest=new JavaScriptSerializer().Deserialize<Dictionary<string,string>>(File.ReadAllText(Path.Combine(folder,"backup.json")));
    var data=new Dictionary<string,byte[]>();
-   foreach(string f in Files){
+   var files=AcePilotsSettings.ConfigPath(Root)!=null&&manifest.ContainsKey(AcePilotsSettings.FileName)
+    ?Files.Concat(new[]{AcePilotsSettings.FileName}):Files;
+   foreach(string f in files){
     string h;if(!manifest.TryGetValue(f,out h)){
      if(f=="FOV.ini"||f=="MissileGuidance.ini"||f=="FrameGeneration.ini"||f=="ProximityFuse.ini"){data[f]=original[f];continue;}
      throw new InvalidOperationException("备份不完整："+f);

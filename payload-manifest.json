@@ -17,7 +17,7 @@
   },
   {
     "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\AC8MouseAim\\config.ini",
-    "SHA256": "3046317CBA35A44A61AA1E8B3C31CA3AABD0CB01D36995F8158B711E517578A0"
+    "SHA256": "D74AEB03B229DAF6BF9AB7451DFCB6A3C5CCD5A57EE02270BB96B10F3F772F9C"
   },
   {
     "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\AC8MouseAim\\README.txt",
@@ -25,7 +25,7 @@
   },
   {
     "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\AC8MouseAim\\Scripts\\ac8_mouse_aim_010.dll",
-    "SHA256": "B74A1FDCB55832DD1B67BA93CB02BFE4B93DDABAEC7A3B152AEE6D31092362E8"
+    "SHA256": "C49E0965B0841C6E9885289C111BF9F08933A54B271936A3AE16E9398919FD11"
   },
   {
     "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\AC8MouseAim\\Scripts\\camera-settings.lua",
@@ -178,6 +178,10 @@
   {
     "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\mods.txt",
     "SHA256": "96B4C26E63128F9083782752B022F1694F465AF292CE0368141F69EB1FD04F9D"
+  },
+  {
+    "Path": "Game\\Binaries\\Win64\\ue4ss\\Mods\\shared\\UEHelpers\\UEHelpers.lua",
+    "SHA256": "7476F02EEF0C87BFEAB169F2FFE2E704363FAEAAE4BF9F1BDA574B1E34F4A0E9"
   },
   {
     "Path": "Game\\Binaries\\Win64\\ue4ss\\UE4SS-settings.ini",

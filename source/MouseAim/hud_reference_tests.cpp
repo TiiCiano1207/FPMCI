@@ -13,6 +13,15 @@ static DWORD WINAPI fixture_process(HWND,LPDWORD p){*p=GetCurrentProcessId();ret
 #include <cassert>
 #include <cstdio>
 int main(){
+ // The default session must never queue FE CSV samples.
+ assert(!shadow_armed && !fe_runtime::trace_enabled);
+ fe_runtime::trace_push({});
+ assert(fe_runtime::trace_size==0);
+ fe_runtime::trace_enabled=true;
+ fe_runtime::trace_push({});
+ assert(fe_runtime::trace_size==1);
+ fe_runtime::trace_enabled=false;
+
  const uintptr_t P=0x7CCF2CE0;
  running=true;active=true;enabled=true;hud_enabled=true;game_paused=false;gaze_active=false;context_suspended=false;aircraft=P;
  auto frame=[&](float tp,float ty,ULONGLONG age=0){HudFrame f;f.pawn=P;f.tick=GetTickCount64()-age;f.epoch=hud_epoch.load();

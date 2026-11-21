@@ -1,4 +1,4 @@
-当前版本：FPMCI 1.1.7。详见 [完整更新说明](RELEASE-v1.1.7.md)。
+当前版本 FPMCI 1.2.0。详见 [1.2.0 更新说明](CHANGELOG-1.2.0.md)。
 
 # FPMCI
 
@@ -8,7 +8,7 @@ ACE COMBAT 8 的鼠标飞控、驾驶舱平滑镜头与外置设置启动器。A
 
 ## 下载与安装 / Download & install
 
-从 [Releases](https://github.com/TiiCiano1207/FPMCI/releases/latest) 下载 **FPMCI-1.1.7.zip** 和对应 SHA256 校验文件。GitHub 的 Source code 压缩包仅包含源码。
+从 [Releases](https://github.com/TiiCiano1207/FPMCI/releases/latest) 下载 **FPMCI-1.2.0.zip** 和对应 SHA256 校验文件。GitHub 的 Source code 压缩包仅包含源码。
 
 1. 将完整包解压到游戏目录外的新文件夹；保留 EXE 旁的全部资源。
 2. 运行 **AC8Workbench.exe**（界面显示 FPMCI），选择游戏与 Steam 位置及安装方案。
@@ -25,6 +25,15 @@ Download the full release ZIP, extract it outside the game directory, run **AC8W
 - DLSS 帧生成开关（默认关闭，需游戏与显卡支持）/ DLSS Frame Generation toggle (off by default; support required).
 - 13 项比例引导与 11 类弹种独立近炸设置 / 13-value guidance editor and eleven per-type proximity-fuse controls.
 - 外置配置，保存后下次启动生效 / External configuration applied on next launch.
+
+## 1.2.0 更新 / Changes
+
+敌方 AI 增强专页、第三人称 EEGS、Su-35 MGP 修复和附加 MOD 排序。详见 [完整更新说明](CHANGELOG-1.2.0.md)。
+
+## 作者 / Authors
+
+- **TiiCiano1207** · 项目维护与实机验证
+- **Codex（OpenAI）** · 协作开发与测试
 
 ## 1.1.7 更新 / Changes
 

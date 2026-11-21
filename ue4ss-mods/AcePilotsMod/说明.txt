@@ -1,0 +1,12 @@
+﻿王牌飞行员｜FPMCI 合并汉化版
+
+在工作台侧边栏打开「敌方AI增强」，用页首开关启用或停用模组。调整预设或单项参数后，点击底部的「保存设置」。设置将在下次启动游戏时生效。
+「关闭」预设恢复技能、机体性能和交战选项的基准值。作用范围和 AI 行为脚本单独设置。游戏内没有本 MOD 的菜单或预设快捷键。
+
+保留 Ace Pilots 0.1.0 的敌方等级、机动权重、机体性能、交战行为和脚本偏向。
+启用「允许使用热焰弹」后，也会使用 Branched 1.2 的导弹威胁反应逻辑。启用「包含友军」时也会扩展这些规则的作用范围。
+
+来源
+Ace Pilots 0.1.0（Mike-0000） https://www.nexusmods.com/acecombat8wingsoftheve/mods/40
+Ace Pilots Mod - Branched 1.2 https://www.nexusmods.com/acecombat8wingsoftheve/mods/203
+仅用于当前 FPMCI 工作台的离线单人游戏。

@@ -2,15 +2,25 @@
 $ErrorActionPreference='Stop'
 [Console]::OutputEncoding=[Text.UTF8Encoding]::new($false)
 $OutputEncoding=[Text.UTF8Encoding]::new($false)
+$folder=Split-Path -Parent ([IO.Path]::GetFullPath($Request))
+$operationLock=$null
+if((Split-Path -Leaf $folder) -match '^workbench-\d{8}-\d{6}-[a-f0-9]{8}$'){
+ $operationLock=[IO.File]::Open((Join-Path $folder 'worker.lock'),'OpenOrCreate','ReadWrite','None')
+}
+try {
 $r=Get-Content -LiteralPath $Request -Raw -Encoding UTF8 | ConvertFrom-Json
 $root=[IO.Path]::GetFullPath([string]$r.Root)
 $result=$null
 try{
- if([string]$r.Action -notin @('Discover','Check','Save','Start','StartDirect','Recover','Cleanup','Disable','Enable','CheckOriginal','Analyze','CheckPackage')){throw 'Unsupported workbench action.'}
+ if([string]$r.Action -notin @('Discover','Check','Save','Start','StartDirect','Recover','Cleanup','Disable','Enable','CheckOriginal','Analyze','CheckPackage','ExtraList','ExtraPreview','ExtraImport','ExtraEnable','ExtraDisable','ExtraBefore','ExtraAfter','ExtraRemove','HudEnable','HudDisable','HudSave','BalanceEnable','BalanceDisable')){throw 'Unsupported workbench action.'}
  . (Join-Path $root 'Gui-Core.ps1')
  switch([string]$r.Action){
   {$_ -in @('Discover','Check','Save','Start','StartDirect','Recover')}{
    $result=Invoke-AC8GuiAction -Action $r.Action -Root $root -GamePath ([string]$r.GamePath) -SteamPath ([string]$r.SteamPath) -MissileMode ([string]$r.MissileMode) -ConfirmRecovery:([bool]$r.ConfirmRecovery)
+  }
+  {$_ -in @('ExtraList','ExtraPreview','ExtraImport','ExtraEnable','ExtraDisable','ExtraBefore','ExtraAfter','ExtraRemove','HudEnable','HudDisable','HudSave','BalanceEnable','BalanceDisable')}{
+   . (Join-Path $root 'ExtraMods-Settings.ps1')
+   $result=Invoke-AC8ExtraModAction $r $root
   }
   'CheckPackage'{
    & (Join-Path $root 'Check-Package.ps1') -PackageRoot $root
@@ -44,7 +54,8 @@ try{
  if(Get-Command Show-AC8Problem -ErrorAction SilentlyContinue){Show-AC8Problem $failure $root ([string]$r.Action)}
  $hint=[string]$failure.Exception.Data['AC8Hint']
  if(!$hint){$hint='查看操作日志和诊断文件，修正路径、权限或文件归属后再试。'}
- $result=[pscustomobject]@{Success=$false;Title='操作未完成';Message=$failure.Exception.Message+[Environment]::NewLine+$hint}
+ $result=[pscustomobject]@{Success=$false;Code=[string]$failure.Exception.Data['AC8Code'];Title='操作未完成';Message=$failure.Exception.Message+[Environment]::NewLine+$hint}
 }
 [IO.File]::WriteAllText([IO.Path]::GetFullPath($Response),($result|ConvertTo-Json -Depth 8),[Text.UTF8Encoding]::new($false))
+} finally {if($operationLock){$operationLock.Dispose()}}
 if(!$result.Success){exit 1}

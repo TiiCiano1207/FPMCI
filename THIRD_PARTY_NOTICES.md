@@ -43,3 +43,21 @@ Static instance: weight 700 / optical size 36. License: ui/fpmci/fonts/OFL-BigSh
 ## Supplied missile modules
 
 FPMCI 1.1.3+ bundles the supplied AC8PropNav 2.3.9 native DLL in release payloads. Its source was not supplied; upstream files, version and SHA256 are retained in docs/upstream/AC8PropNav-2.3.9. The instance-only fuse adaptation derives from the supplied AC8ProximityFuse 0.0.2 Lua files, retained in docs/upstream/AC8ProximityFuse-0.0.2. The root MIT license does not relicense third-party material.
+
+## Extra MOD support
+
+ExtraMods-Settings.ps1 is adapted from [CreeperUX/AC8-Integrated-Mod v2.5.2](https://github.com/CreeperUX/AC8-Integrated-Mod/tree/v2.5.2). The bundled UEHelpers Lua library is taken from the same release and accompanies the pinned UE4SS runtime. See the UE4SS license in the payload.
+
+## AC8EnhancedHUD 0.7.3
+
+Enhanced Cockpit HUD 0.7.3 by neuclyd. FPMCI adapts the supplied module for the workbench and third-person EEGS. Upstream: https://www.nexusmods.com/acecombat8wingsoftheve/mods/198 .
+
+SP Weapon Customizer 2.6 by Lenkov (lenkov7410). FPMCI adaptation of the supplied 2.6 files for offline single-player use. Upstream: https://www.nexusmods.com/acecombat8wingsoftheve/mods/57 . Related reference: Hangar Weapon Model Fix by buyx1412.
+
+## Ace Pilots 0.1.0
+
+[Ace Pilots](https://www.nexusmods.com/acecombat8wingsoftheve/mods/40) is by Mike-0000 (michael319, Nexus upload by 0Mike), copyright 2026 Mike-0000, under the MIT license. The copyright and permission notice is included at licenses/AcePilots-MIT.txt. The bundled UE4SS runtime retains its own MIT notice. The original project credits 4598llj and *FOV Change* for the offline launch method.
+
+## Ace Pilots Mod - Branched 1.2
+
+The enemy AI integration also incorporates the supplied [Branched 1.2](https://www.nexusmods.com/acecombat8wingsoftheve/mods/203) files by madcow12, based on the original work by Mike-0000. Third-party components retain their respective rights and notices.

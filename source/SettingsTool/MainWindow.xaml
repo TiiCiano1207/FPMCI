@@ -152,6 +152,7 @@
      <Grid Grid.Row="1" Margin="0,12,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
       <Button x:Name="Save" Content="保存设置" MinWidth="104" Padding="14,9" BorderBrush="#087F9F"/>
       <CheckBox x:Name="SteamLaunch" Grid.Column="1" Content="从 Steam 启动" IsChecked="True" FontSize="13" Margin="18,0,12,0" VerticalAlignment="Center" ToolTip="关闭后直接运行 MOD 会话启动流程，需要 Steam 已运行。"/>
+      <Button x:Name="InstallGuide" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Content="安装说明" Margin="0,0,8,0" Padding="8,4" MinHeight="28" FontSize="11"/>
       <Button x:Name="StartGame" Grid.Column="3" Content="开始游戏" Tag="primary" MinWidth="168" FontSize="15" Padding="24,11"/>
      </Grid>
      <ProgressBar x:Name="Busy" Grid.Row="2" IsIndeterminate="True" Visibility="Collapsed" Height="2" Foreground="#087F9F" Background="#BED3DD" Margin="0,10,0,0"/>

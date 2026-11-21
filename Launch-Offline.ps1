@@ -62,7 +62,7 @@ function Cleanup-Owned($state,[bool]$Analyze=$true) {
   }
   $after=Get-SaveHashes
   ConvertTo-Json -InputObject $after | Set-Content -LiteralPath (Join-Path $state.Results 'save-hashes-after.json') -Encoding UTF8
-  if($Analyze){Invoke-AC8OptionalAnalysis $root $state.Results}
+  if($Analyze -and (!$state.PSObject.Properties['FlightRecording'] -or $state.FlightRecording)){Invoke-AC8OptionalAnalysis $root $state.Results}
  }catch{Write-Host ('清理已完成，可选诊断未完成：'+$_.Exception.Message)}
 }
 
@@ -76,7 +76,8 @@ if($validation.deploymentAllowed -ne $true){throw 'Candidate is gated off. No ga
 if(Test-Path -LiteralPath $statePath){Stop-AC8Problem 'OLD_SESSION' '上一次运行尚未完成清理。' '正常关闭游戏后运行 Cleanup-Offline.cmd，再从 Steam 或 Start.cmd 启动。'}
 if(Get-Process -Name AceCombat8 -ErrorAction SilentlyContinue){throw 'Game is already running.'}
 if(!(Get-Process -Name steam -ErrorAction SilentlyContinue)){throw 'Start Steam first.'}
-if(!(Test-Path -LiteralPath $exe) -or (Get-AC8FileHash -LiteralPath $exe).Hash -notin $expectedHashes){throw 'Game build mismatch. Supported builds: 25201480 and 26002268. Unknown executables are blocked.'}
+$gameHash=if(Test-Path -LiteralPath $exe){(Get-AC8FileHash -LiteralPath $exe).Hash}
+if($gameHash -notin $expectedHashes){throw 'Game build mismatch. Supported builds: 25201480 and 26002268. Unknown executables are blocked.'}
 foreach($n in 'dwmapi.dll','ue4ss','steam_appid.txt'){
  if(Test-Path -LiteralPath (Join-Path $w64 $n)){Stop-AC8Problem 'LOADER_CONFLICT' "检测到已有加载器：$n" '请从 Steam 或 Start.cmd 进入恢复流程，或运行 Recover-Cleanup.cmd 核对归属后清理。'}
 }
@@ -113,14 +114,30 @@ $payload=Join-Path $root 'payload/Game/Binaries/Win64'
 $sha=[Security.Cryptography.SHA256]::Create()
 try{$appidHash=[BitConverter]::ToString($sha.ComputeHash([Text.Encoding]::ASCII.GetBytes("2288340`r`n"))).Replace('-','')}finally{$sha.Dispose()}
 $planned=@([pscustomobject]@{Name='dwmapi.dll';SHA256=(Get-AC8FileHash -LiteralPath (Join-Path $payload 'dwmapi.dll')).Hash},[pscustomobject]@{Name='steam_appid.txt';SHA256=$appidHash})
-$state=[pscustomobject]@{Id=$id;Win64=$w64;Results=$results;Files=$planned;PID=$null}
-Write-AC8Json $state $statePath
+. (Join-Path $root 'ExtraMods-Settings.ps1')
+$modLock=Enter-AC8Operation $root
+try {
+ $extras=@(Get-AC8EnabledExtraMods $root)
+ $sharedSource=Join-Path $payload 'ue4ss/Mods/shared'
+ $sharedSnapshot=@()
+ if($extras.Count){$sharedSnapshot=@(Get-AC8Snapshot $sharedSource)}
+ $state=[pscustomobject]@{Id=$id;Win64=$w64;Results=$results;Files=$planned;PID=$null
+  FlightRecording=($mouseSettings.flight_recording -eq 1)
+  ExtraMods=@($extras | Select-Object Name,Files);SharedLibrary=$sharedSnapshot}
+ Write-AC8Json $state $statePath
+}finally{Exit-AC8Operation $modLock}
 $launchFailure=$null
 $stage='准备加载器'
 try {
  New-Item -ItemType Directory -Path (Join-Path $w64 'ue4ss') | Out-Null
  Set-Content -LiteralPath (Join-Path $w64 'ue4ss/AC8SourceInit-owner.txt') -Value $id -Encoding ASCII
  Install-SelectedUE4SS (Join-Path $payload 'ue4ss') (Join-Path $w64 'ue4ss') $features
+ if($extras.Count){
+  $sharedTarget=Join-Path $w64 'ue4ss/Mods/shared'
+  Copy-Item -LiteralPath $sharedSource -Destination $sharedTarget -Recurse
+  Assert-AC8Snapshot $sharedTarget $sharedSnapshot
+ }
+ Install-AC8ExtraMods $extras (Join-Path $w64 'ue4ss/Mods')
  Apply-MouseSettings $mouseSettings (Join-Path $w64 'ue4ss/Mods/AC8MouseAim')
  . (Join-Path $root 'Keybinding-Settings.ps1')
  $bindings=Read-AC8Keybindings (Join-Path $root 'Keybindings.ini')
@@ -145,6 +162,10 @@ try {
  $stage='启动游戏'
  $launchArguments=@('-eac-nop-loaded','-nosplash')
  Write-Host ('GAME_ARGUMENTS: '+($launchArguments -join ' '))
+ if(Test-Path -LiteralPath (Join-Path $root 'multirole-balance.enabled')){
+  $env:FPMCI_SP_LOADOUT_FILE=Join-Path $root 'Multirole-Loadouts.ini'
+ }
+ $env:FPMCI_ACE_PILOTS_BUILD=if($gameHash -eq $expectedHashes[1]){'26002268'}else{'25201480'}
  $game=Start-Process -FilePath $exe -WorkingDirectory $w64 -ArgumentList $launchArguments -WindowStyle Normal -PassThru
  Write-AC8Json ([pscustomobject]@{Stage='monitoring';MonitorPID=$PID;GamePID=$game.Id;Time=[DateTime]::UtcNow.ToString('o')}) (Join-Path $results 'monitor-status.json')
  $state.PID=$game.Id

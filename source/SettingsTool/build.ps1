@@ -19,7 +19,7 @@ $arguments=@('/nologo','/target:winexe','/platform:x64','/optimize+','/utf8outpu
  '/r:System.Windows.Forms.dll','/r:System.Drawing.dll','/r:System.Web.Extensions.dll',
  '/r:System.IO.Compression.dll',
  (Join-Path $sourceDir 'FrameGeneration.cs'),(Join-Path $sourceDir 'Guidance.cs'),(Join-Path $sourceDir 'Settings.cs'),(Join-Path $sourceDir 'App.cs'),(Join-Path $sourceDir 'SelfTest.cs'),(Join-Path $sourceDir 'AssemblyInfo.cs'),
- (Join-Path $sourceDir 'Bundle.cs'),(Join-Path $sourceDir 'Operations.cs'),(Join-Path $sourceDir 'WorkbenchUI.cs'),(Join-Path $sourceDir 'WorkbenchTest.cs'))
+ (Join-Path $sourceDir 'Bundle.cs'),(Join-Path $sourceDir 'Operations.cs'),(Join-Path $sourceDir 'EnhancedHud.cs'),(Join-Path $sourceDir 'AcePilots.cs'),(Join-Path $sourceDir 'WorkbenchUI.cs'),(Join-Path $sourceDir 'WorkbenchTest.cs'))
 if($EmbedBundle){$arguments+=@('/resource:'+$BundlePath+',AC8.Bundle.zip','/resource:'+$HashesPath+',AC8.Bundle.hashes.json')}
 & $compiler $arguments
 if($LASTEXITCODE -ne 0){throw 'Workbench EXE compilation failed.'}

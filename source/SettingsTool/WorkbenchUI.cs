@@ -12,7 +12,7 @@ using Forms=System.Windows.Forms;
 namespace AC8Settings {
  public sealed partial class SettingsWindow {
   string gamePath="",steamPath="",missileMode="guidance",launchOption="";
-  bool busy,modDisabled;
+  bool busy,modDisabled,watchLaunchStatus;
   string[] gameCandidates=new string[0],steamCandidates=new string[0];
   TextBox gameInput,steamInput,optionInput,logInput;
   ComboBox featureInput;
@@ -83,6 +83,32 @@ namespace AC8Settings {
    }
   }
   void MaintenancePage(){
+   Section("附加 MOD","拖动模组行，或使用上移、下移调整加载顺序。");
+   Actions(ActionButton("管理附加 MOD",ShowExtraMods,true));
+   var summary=new StackPanel();
+   try{
+    var mods=ReadExtraMods();
+    var label=Text("已添加 "+mods.Length+" 个 MOD",12,"#496878");
+    label.Margin=new Thickness(0,0,0,5);
+    summary.Children.Add(label);
+    if(mods.Length==0)summary.Children.Add(Text("暂无附加 MOD",12,"#496878"));
+    else{
+     var rows=new StackPanel();
+     foreach(var mod in mods)rows.Children.Add(DraggableModRow(mod,mods,async (source,target,before)=>{
+      if(busy)return;
+      SetBusy(true);
+      try{
+       var req=new OperationRequest{Root=store.Root,Action=before?"ExtraBefore":"ExtraAfter",ExtraName=source,ExtraPath=target};
+       var result=await Task.Run(()=>Operations.Run(req,null));
+       if(page==6)ShowPage(page);
+       SetOperationStatus(result);
+      }catch(Exception ex){SetStatus(ex.Message,true);}finally{SetBusy(false);}
+     }));
+     summary.Children.Add(new ScrollViewer{Content=rows,MaxHeight=112,VerticalScrollBarVisibility=ScrollBarVisibility.Auto});
+    }
+   }catch(Exception ex){summary.Children.Add(Text(ex.Message,12,"#AF3928"));}
+   body.Children.Add(summary);
+
    Section(modDisabled?"模组当前已停用":"模组当前已启用","只切换本整合包的启动模式，保留游戏原文件。");
    Actions(ActionButton("启用模组",()=>RunOperation("Enable")),ActionButton("停用模组",()=>RunOperation("Disable")),ActionButton("检查原版启动条件",()=>RunOperation("CheckOriginal")));
    Note("启停前需退出游戏。原有检查会确认加载器归属与会话状态，不会删除未知 MOD 文件。");
@@ -93,6 +119,198 @@ namespace AC8Settings {
    }));
    Actions(ActionButton("打开清理备份",()=>OpenFolder("cleanup-backups")),ActionButton("打开设置备份",()=>OpenFolder("settings-backups")));
    Logs();
+  }
+  bool IsManagedModule(string name){
+   return IsEnhancedHud(name)||AcePilotsSettings.IsIntegrated(store.Root,name);
+  }
+  ExtraModEntry[] ReadExtraMods(){
+   var folder=new DirectoryInfo(Path.Combine(store.Root,"ue4ss-mods"));
+   if(!folder.Exists)return new ExtraModEntry[0];
+   if((folder.Attributes&FileAttributes.ReparsePoint)!=0)throw new IOException("附加 MOD 库是文件系统链接，请检查目录。");
+   var orderPath=Path.Combine(store.Root,"ExtraModOrder.txt");
+   var ranks=new Dictionary<string,int>(StringComparer.OrdinalIgnoreCase);
+   if(File.Exists(orderPath))foreach(var name in File.ReadAllLines(orderPath))if(!ranks.ContainsKey(name))ranks.Add(name,ranks.Count);
+   return folder.GetDirectories().Where(d=>!IsManagedModule(d.Name))
+    .OrderBy(d=>{int rank;return ranks.TryGetValue(d.Name.TrimStart('_'),out rank)?rank:int.MaxValue;})
+    .ThenBy(d=>d.Name,StringComparer.OrdinalIgnoreCase)
+    .Select(d=>new ExtraModEntry{Name=d.Name,Enabled=!d.Name.StartsWith("_",StringComparison.Ordinal)}).ToArray();
+  }
+  Border ExtraModRow(ExtraModEntry mod,params Button[] actions){
+   var line=new DockPanel{LastChildFill=true};
+   foreach(var button in actions.Reverse()){
+    button.Margin=new Thickness(8,0,0,0);
+    DockPanel.SetDock(button,Dock.Right);line.Children.Add(button);
+   }
+   var state=Text(mod.Enabled?"已启用":"已停用",12,mod.Enabled?"#086E89":"#496878");
+   state.Margin=new Thickness(14,0,4,0);state.VerticalAlignment=VerticalAlignment.Center;
+   DockPanel.SetDock(state,Dock.Right);line.Children.Add(state);
+   var name=Text(mod.Name.TrimStart('_'),13);
+   name.TextWrapping=TextWrapping.NoWrap;name.TextTrimming=TextTrimming.CharacterEllipsis;
+   name.ToolTip=mod.Name;name.VerticalAlignment=VerticalAlignment.Center;
+   line.Children.Add(name);
+   return new Border{Child=line,BorderBrush=Brush("#BED3DD"),BorderThickness=new Thickness(0,0,0,1),Padding=new Thickness(9,6,9,6),MinHeight=33};
+  }
+  static bool FocusModRow(DependencyObject root,string name){
+   var border=root as Border;
+   if(border!=null && border.Focusable && Equals(border.Tag,name))return border.Focus();
+   for(int i=0;i<VisualTreeHelper.GetChildrenCount(root);i++)
+    if(FocusModRow(VisualTreeHelper.GetChild(root,i),name))return true;
+   return false;
+  }
+  Border DraggableModRow(ExtraModEntry mod,ExtraModEntry[] mods,Func<string,string,bool,Task> save,params Button[] actions){
+   int index=Array.IndexOf(mods,mod);
+   Func<int,Task> step=dir=>save(mod.Name,mods[index+dir].Name,dir<0);
+   var up=ActionButton("上移",async ()=>await step(-1));
+   var down=ActionButton("下移",async ()=>await step(1));
+   up.IsEnabled=index>0;down.IsEnabled=index+1<mods.Length;
+   var row=ExtraModRow(mod,new[]{up,down}.Concat(actions).ToArray());
+   row.Focusable=true;row.Tag=mod.Name;
+   row.KeyDown+=async (s,e)=>{
+    if(e.OriginalSource!=row)return;
+    int dir=e.Key==Key.Up?-1:e.Key==Key.Down?1:0;
+    if(dir==0)return;
+    e.Handled=true;if(index+dir<0||index+dir>=mods.Length)return;
+    var host=(Window)Window.GetWindow(row);
+    await step(dir);
+    if(host!=null)FocusModRow(host,mod.Name);
+   };
+   var panel=(DockPanel)row.Child;
+   var grip=Text("☰",15,"#496878");grip.Margin=new Thickness(0,0,9,0);
+   DockPanel.SetDock(grip,Dock.Left);panel.Children.Insert(0,grip);
+   row.Background=Brushes.Transparent;row.AllowDrop=true;
+   row.Cursor=Cursors.SizeNS;row.ToolTip="按住拖动，调整加载顺序";
+   foreach(var button in actions)button.Cursor=Cursors.Hand;
+   Point? start=null;
+   row.MouseLeftButtonDown+=(s,e)=>{row.Focus();start=e.GetPosition(row);row.CaptureMouse();e.Handled=true;};
+   row.LostMouseCapture+=(s,e)=>start=null;
+   row.MouseLeftButtonUp+=(s,e)=>{if(row.IsMouseCaptured)row.ReleaseMouseCapture();};
+   row.MouseMove+=(s,e)=>{
+    if(!start.HasValue||e.LeftButton!=MouseButtonState.Pressed)return;
+    var delta=e.GetPosition(row)-start.Value;
+    if(Math.Abs(delta.X)<SystemParameters.MinimumHorizontalDragDistance && Math.Abs(delta.Y)<SystemParameters.MinimumVerticalDragDistance)return;
+    row.ReleaseMouseCapture();
+    DragDrop.DoDragDrop(row,new DataObject("FPMCI.ModOrder",mod.Name),DragDropEffects.Move);
+   };
+   var brush=row.BorderBrush;var thickness=row.BorderThickness;
+   Action reset=()=>{row.BorderBrush=brush;row.BorderThickness=thickness;};
+   DragEventHandler over=(s,e)=>{
+    if(!e.Data.GetDataPresent("FPMCI.ModOrder"))return;
+    bool valid=(string)e.Data.GetData("FPMCI.ModOrder")!=mod.Name;
+    e.Handled=true;e.Effects=valid?DragDropEffects.Move:DragDropEffects.None;
+    if(!valid){reset();return;}
+    row.BorderBrush=Brush("#086E89");row.BorderThickness=e.GetPosition(row).Y<row.ActualHeight/2?new Thickness(0,2,0,0):new Thickness(0,0,0,2);
+   };
+   row.PreviewDragEnter+=over;row.PreviewDragOver+=over;
+   row.DragLeave+=(s,e)=>reset();
+   row.PreviewDrop+=async (s,e)=>{
+    if(!e.Data.GetDataPresent("FPMCI.ModOrder"))return;
+    string source=e.Data.GetData("FPMCI.ModOrder") as string;
+    bool before=e.GetPosition(row).Y<row.ActualHeight/2;
+    e.Handled=true;reset();
+    if(source!=null && source!=mod.Name)await save(source,mod.Name,before);
+   };
+   return row;
+  }
+  void ShowExtraMods(){
+   if(busy||store==null||!CommitEditors())return;
+   CreateExtraModsWindow().ShowDialog();
+   RefreshConfiguration();
+   ShowPage(page);
+  }
+  Window CreateExtraModsWindow(){
+   var dialog=new Window{Title="FPMCI · 附加 MOD",Owner=Window,WindowStartupLocation=WindowStartupLocation.CenterOwner,
+    Width=790,Height=610,MinWidth=620,MinHeight=500,ShowInTaskbar=false,
+    Background=Window.Background,Foreground=Window.Foreground,FontFamily=Window.FontFamily,FontSize=Window.FontSize,
+    Icon=Window.Icon,UseLayoutRounding=true,AllowDrop=true};
+   dialog.Resources.MergedDictionaries.Add(Window.Resources);
+   var layout=new DockPanel{LastChildFill=true};
+   dialog.Content=new Border{Child=layout,Padding=new Thickness(24),Background=Window.Background};
+   var header=new StackPanel{Margin=new Thickness(0,0,0,16)};
+   var title=Text("附加 UE4SS MOD",23);title.FontWeight=FontWeights.SemiBold;header.Children.Add(title);
+   var hint=Text("拖动 MOD 名称到目标行的上方或下方。下次启动时，已启用的 MOD 从上到下加载。",13,"#496878");
+   hint.Margin=new Thickness(0,7,0,0);header.Children.Add(hint);
+   DockPanel.SetDock(header,Dock.Top);layout.Children.Add(header);
+   var footer=new StackPanel{Margin=new Thickness(0,14,0,0)};
+   DockPanel.SetDock(footer,Dock.Bottom);layout.Children.Add(footer);
+   var help=Text("支持 ZIP 或已解压的 UE4SS MOD 文件夹。MOD 自带的 Pak 和 IoStore 资源会随 MOD 部署。移除的 MOD 可从备份目录重新导入。",12,"#496878");
+   footer.Children.Add(help);
+   var message=Text("改动将在下次启动时生效。",12,"#496878");message.Margin=new Thickness(0,9,0,6);
+   footer.Children.Add(new ScrollViewer{Content=message,MaxHeight=64,VerticalScrollBarVisibility=ScrollBarVisibility.Auto});
+   var bar=new DockPanel{LastChildFill=true,Margin=new Thickness(0,3,0,0)};
+   footer.Children.Add(bar);
+   var close=ActionButton("完成",()=>dialog.Close(),true);
+   DockPanel.SetDock(close,Dock.Right);bar.Children.Add(close);
+   var commands=new WrapPanel();bar.Children.Add(commands);
+   var list=new StackPanel();
+   var empty=Text("尚未添加 MOD。可选择 ZIP 或文件夹，也可以拖入窗口。",13,"#496878");
+   empty.HorizontalAlignment=HorizontalAlignment.Center;empty.VerticalAlignment=VerticalAlignment.Center;empty.TextAlignment=TextAlignment.Center;
+   empty.Margin=new Thickness(18);
+   var listSurface=new Grid();
+   listSurface.Children.Add(new ScrollViewer{Content=list,VerticalScrollBarVisibility=ScrollBarVisibility.Auto});
+   listSurface.Children.Add(empty);
+   layout.Children.Add(new Border{Child=listSurface,Background=Brush("#F8FBFC"),BorderBrush=Brush("#BED3DD"),BorderThickness=new Thickness(1)});
+   bool working=false;
+   Action<string,bool> show=(text,error)=>{message.Text=text;message.Foreground=Brush(error?"#AF3928":"#496878");};
+   Action<ExtraModEntry[]> render=null;
+   Func<string,string,string,Task> run=async (action,path,name)=>{
+    if(working)return;
+    working=true;commands.IsEnabled=list.IsEnabled=close.IsEnabled=false;show("正在处理附加 MOD…",false);
+    try{
+     var request=new OperationRequest{Action=action,Root=store.Root,ExtraPath=path,ExtraName=name};
+     var result=await Task.Run(()=>Operations.Run(request,null));
+     if(action=="ExtraPreview"&&result.Success){
+      if(MessageBox.Show(dialog,result.Message,"确认导入附加 MOD",MessageBoxButton.OKCancel,MessageBoxImage.Question)!=MessageBoxResult.OK){
+       show("已取消导入。",false);return;
+      }
+      request.Action="ExtraImport";request.ExtraToken=result.ExtraToken;
+      result=await Task.Run(()=>Operations.Run(request,null));
+     }
+     if(result.ExtraMods!=null)render(result.ExtraMods);
+     show(result.Message,!result.Success);
+    }catch(Exception ex){show(ex.Message,true);}
+    finally{working=false;commands.IsEnabled=list.IsEnabled=close.IsEnabled=true;}
+   };
+   render=mods=>{
+    mods=mods.Where(mod=>!IsManagedModule(mod.Name)).ToArray();
+    list.Children.Clear();
+    empty.Visibility=mods.Length==0?Visibility.Visible:Visibility.Collapsed;
+    foreach(var mod in mods){
+     var toggle=ActionButton(mod.Enabled?"停用":"启用",async ()=>await run(mod.Enabled?"ExtraDisable":"ExtraEnable",null,mod.Name));
+     var remove=ActionButton("移到备份",async ()=>{
+      if(MessageBox.Show(dialog,"将 "+mod.Name+" 移到附加 MOD 备份目录。","移除附加 MOD",MessageBoxButton.OKCancel)==MessageBoxResult.OK)
+       await run("ExtraRemove",null,mod.Name);
+     });
+    list.Children.Add(DraggableModRow(mod,mods,(source,target,before)=>run(before?"ExtraBefore":"ExtraAfter",target,source),toggle,remove));
+    }
+   };
+   commands.Children.Add(ActionButton("添加 ZIP…",async ()=>{
+    var picker=new Microsoft.Win32.OpenFileDialog{Title="选择附加 MOD",Filter="ZIP 压缩包|*.zip",CheckFileExists=true};
+    if(picker.ShowDialog(dialog)==true)await run("ExtraPreview",picker.FileName,null);
+   }));
+   commands.Children.Add(ActionButton("添加文件夹…",async ()=>{
+    using(var picker=new Forms.FolderBrowserDialog{Description="选择附加 MOD 文件夹",ShowNewFolderButton=false})
+     if(picker.ShowDialog()==Forms.DialogResult.OK)await run("ExtraPreview",picker.SelectedPath,null);
+   }));
+   commands.Children.Add(ActionButton("打开 MOD 库",()=>{
+    string path=Path.Combine(store.Root,"ue4ss-mods");
+    if(!Directory.Exists(path)){show("导入后即可打开 MOD 库。",false);return;}
+    try{Process.Start(new ProcessStartInfo("explorer.exe",Operations.Quote(path)){UseShellExecute=true});}
+    catch(Exception ex){show(ex.Message,true);}
+   }));
+   dialog.DragOver+=(s,e)=>{
+    var paths=e.Data.GetData(DataFormats.FileDrop) as string[];
+    e.Effects=!working&&paths!=null&&paths.Length==1&&(Directory.Exists(paths[0])||Path.GetExtension(paths[0]).Equals(".zip",StringComparison.OrdinalIgnoreCase))
+     ?DragDropEffects.Copy:DragDropEffects.None;e.Handled=true;
+   };
+   dialog.Drop+=async (s,e)=>{
+    var paths=e.Data.GetData(DataFormats.FileDrop) as string[];
+    if(paths!=null&&paths.Length==1)await run("ExtraPreview",paths[0],null);
+    e.Handled=true;
+   };
+   dialog.PreviewKeyDown+=(s,e)=>{if(e.Key==Key.Escape&&!working){e.Handled=true;dialog.Close();}};
+   dialog.Closing+=(s,e)=>{if(working)e.Cancel=true;};
+   try{render(ReadExtraMods());}catch(Exception ex){show(ex.Message,true);}
+   return dialog;
   }
   void HelpPage(){
    Section("安装 MOD","将完整文件夹解压到游戏目录之外，双击 AC8Workbench.exe。");
@@ -122,6 +340,21 @@ namespace AC8Settings {
    save.IsEnabled=!value&&(page==5||Dirty());defaults.IsEnabled=!value;restore.IsEnabled=!value&&store.LatestBackup()!=null;
    ((ProgressBar)Window.FindName("Busy")).Visibility=value?Visibility.Visible:Visibility.Collapsed;
   }
+  void SetOperationStatus(OperationResult result){
+   SetStatus(result.Title+" · "+result.Message,!result.Success);
+   watchLaunchStatus=result.Code=="GAME_RUNNING";
+  }
+  void RefreshLaunchStatus(){
+   if(!watchLaunchStatus||busy||store==null)return;
+   var games=Process.GetProcessesByName("AceCombat8");
+   bool running=games.Length!=0;
+   foreach(var game in games)game.Dispose();
+   if(running)return;
+   if(File.Exists(Path.Combine(store.Root,"active-session.json"))){
+    SetStatus("游戏已退出 · 上次会话待恢复，再次启动时会等待或继续恢复");
+    watchLaunchStatus=true;
+   }else SetStatus("游戏已退出 · 可再次点击开始游戏，启动器会等待后台整理完成");
+  }
   async void RunOperation(string action,bool confirm=false){
    if(busy||store==null)return;
    CommitInstallFields();if(!CommitEditors())return;
@@ -139,7 +372,7 @@ namespace AC8Settings {
      string storedMode=storedFeature.Contains("missile_mode=none")||storedFeature.Contains("missile_enhancement=0")?"none":"guidance";
      if(installationChanged||storedMode!=missileMode){
       var installation=await Task.Run(()=>Operations.Run(new OperationRequest{Action="Save",Root=store.Root,GamePath=gamePath,SteamPath=steamPath,MissileMode=missileMode},null));
-      if(!installation.Success){SetBusy(false);SetStatus(installation.Title+" · "+installation.Message,true);return;}
+      if(!installation.Success){SetBusy(false);SetOperationStatus(installation);return;}
       if(!string.IsNullOrEmpty(installation.GameRoot)){gamePath=installation.GameRoot;request.GamePath=gamePath;}
       if(!string.IsNullOrEmpty(installation.Option))launchOption=installation.Option;
      }
@@ -153,7 +386,7 @@ namespace AC8Settings {
     if(result.GameCandidates!=null)gameCandidates=result.GameCandidates;
     if(result.SteamCandidates!=null)steamCandidates=result.SteamCandidates;
     if(!string.IsNullOrEmpty(result.Option))launchOption=result.Option;
-    SetBusy(false);ShowPage(page);SetStatus(result.Title+" · "+result.Message,!result.Success);
+    SetBusy(false);ShowPage(page,action=="Save");SetOperationStatus(result);
    }catch(Exception ex){SetBusy(false);SetStatus(ex.Message,true);}
   }
  }

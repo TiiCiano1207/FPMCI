@@ -34,7 +34,7 @@ EXE 只包含启动/设置界面，不包含 MOD 资源。无需运行时解包�
 '''
 (stage/'docs/WORKBENCH.txt').write_text(notes,encoding='utf-8-sig')
 (stage/'外置版使用说明.txt').write_text(notes,encoding='utf-8-sig')
-info=json.loads((stage/'package-info.json').read_text('utf-8-sig'));info['settings_tool_version']='1.0';info['distribution']='external-resources'
+info=json.loads((stage/'package-info.json').read_text('utf-8-sig'));info['settings_tool_version']=info['version'];info['distribution']='external-resources'
 (stage/'package-info.json').write_text(json.dumps(info,indent=2)+'\n',encoding='utf-8')
 snapshot=json.loads((stage/'docs/SOURCE-SNAPSHOT.json').read_text('utf-8-sig'))
 snapshot['files']=[e for e in snapshot['files'] if not e['path'].startswith('source/SettingsTool/')]

@@ -984,7 +984,10 @@ extern "C" __declspec(dllexport) int ac8_mouseaim_start(lua_State* state) {
     } else {
         log_line("warning raw input hook unavailable; using DirectInput fallback");
     }
-    shadow_start();
+    const bool flight_recording=read_config_int(L"flight_recording",0)==1;
+    fe_runtime::trace_enabled=flight_recording;
+    if(flight_recording)shadow_start();
+    log_line("FLIGHT_RECORDING %s",flight_recording?"on":"off");
     running.store(true);
     std::thread(mouse_loop).detach();
     std::thread(overlay_loop).detach();

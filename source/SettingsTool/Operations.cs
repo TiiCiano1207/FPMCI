@@ -20,9 +20,15 @@ namespace AC8Settings {
  public sealed class OperationRequest {
   public string Action,Root,GamePath,SteamPath,MissileMode;
   public bool ConfirmRecovery;
+  public string ExtraPath,ExtraName,ExtraToken,HudConfig;
+ }
+ public sealed class ExtraModEntry {
+  public string Name;public bool Enabled;
+  public override string ToString(){return Name+ (Enabled? "  ·  已启用":"  ·  已停用");}
  }
  public sealed class OperationResult {
-  public bool Success;public string Title,Message,GameRoot,SteamPath,Option;
+  public string ExtraToken;public ExtraModEntry[] ExtraMods;
+  public bool Success;public string Code,Title,Message,GameRoot,SteamPath,Option;
   public string[] GameCandidates,SteamCandidates;
  }
  public static class Operations {

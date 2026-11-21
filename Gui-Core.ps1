@@ -74,8 +74,23 @@ function Invoke-AC8GuiAction {
  }
  $steam=[IO.Path]::GetFullPath($steam)
  $residuals=@(Get-AC8Residuals $game)
- $active=Test-Path -LiteralPath (Join-Path $Root 'active-session.json')
- $running=[bool](Get-Process -Name AceCombat8 -ErrorAction SilentlyContinue)
+ $statePath=Join-Path $Root 'active-session.json'
+ $active=Test-Path -LiteralPath $statePath
+ $processes=@(Get-Process -Name AceCombat8 -ErrorAction SilentlyContinue)
+ $running=$processes.Count -gt 0
+ if($active -and $processes.Count -eq 1 -and $Action -in @('Start','StartDirect')){
+  # A launch click during an owned game's exit should flow into the existing cleanup wait.
+  $raw=Get-Content -LiteralPath $statePath -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+  $session=if($raw){$raw | ConvertFrom-Json -ErrorAction SilentlyContinue}
+  $previous=$processes[0]
+  if($session.PID -eq $previous.Id -and $session.Win64 -eq (Split-Path $exe -Parent) -and $previous.Path -eq $exe){
+   Write-Host '等待当前游戏进程退出（最多 10 秒）……'
+   if(!$previous.WaitForExit(10000)){
+    return [pscustomobject]@{Success=$true;Code='GAME_RUNNING';Title='游戏仍在运行';Message='请先在游戏内退出，再点击开始游戏。';GameRoot=$game;Option=$null}
+   }
+   $running=[bool](Get-Process -Name AceCombat8 -ErrorAction SilentlyContinue)
+  }
+ }
  if(!$running -and $Action -in @('Check','Start','StartDirect')){
   Invoke-AC8BackupMaintenance -PackageRoot $Root -GameRoot $game -WaitMilliseconds 60000
   # The previous monitor may have restored files and removed its session while we waited.
@@ -88,7 +103,7 @@ function Invoke-AC8GuiAction {
   if($running){$message+=' 游戏正在运行，请正常退出后再保存或清理。'}
   elseif($active -or $residuals.Count){$message+=' 检测到未完成会话或残留：'+($residuals -join '、')+'。请先使用“备份并清理”。'}
   else{$message+=' 可选择安装内容，保存设置后复制 Steam 启动选项。'}
-  return [pscustomobject]@{Success=$true;Title='检查完成';Message=$message;GameRoot=$game;Option=$null}
+  return [pscustomobject]@{Success=$true;Code=$(if($running){'GAME_RUNNING'});Title='检查完成';Message=$message;GameRoot=$game;Option=$null}
  }
  if($running){Stop-AC8Problem 'GAME_RUNNING' '游戏正在运行。' '请正常退出游戏，等待清理完成后再操作。'}
  # Resume only a recorded session, through the existing ownership/backup checks.

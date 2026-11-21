@@ -1,20 +1,268 @@
 {
   "source_version": "2.4.2",
-  "snapshot_date": "2026-11-05",
-  "native_sha256": "B74A1FDCB55832DD1B67BA93CB02BFE4B93DDABAEC7A3B152AEE6D31092362E8",
-  "note": "1.0.1 compatibility update: exact old/new executable hashes retained; new camera vtable/update/cache/actor getter independently resolved from PE and native registration table; native camera fixtures and settings/UI tests passed. Flight laws and other payload resources unchanged. Updated-game live validation, UE4SS/FOV and missile field baselines remain pending. FPMCI 1.1.0 UI redesign only; native resources unchanged. FPMCI 1.1.2: remove diagnostics page; bound inactive backups/logs; native controller and log producers unchanged. Isolated validation only. FPMCI 1.1.3 integrates supplied AC8PropNav 2.3.9 binary, not a local native rebuild; isolated integration only. FPMCI 1.1.4: instance-only proximity fuse, no shared-table/CDO writes; eleven UI switches; full preset retired. Live detonation/damage untested. FPMCI 1.1.5: independent per-type fuse values and source-backed vanilla references. Current-game live acceptance pending. FPMCI 1.1.6: shared FOV projection, manual-focus flight and continuous camera/FOV release; native isolated and Lua validation only. FPMCI 1.1.7: bounded GUI session-lock wait and refreshed post-wait state; isolated tests only.",
+  "snapshot_date": "2026-11-19",
+  "native_sha256": "C49E0965B0841C6E9885289C111BF9F08933A54B271936A3AE16E9398919FD11",
+  "note": "1.0.1 compatibility update: exact old/new executable hashes retained; new camera vtable/update/cache/actor getter independently resolved from PE and native registration table; native camera fixtures and settings/UI tests passed. Flight laws and other payload resources unchanged. Updated-game live validation, UE4SS/FOV and missile field baselines remain pending. FPMCI 1.1.0 UI redesign only; native resources unchanged. FPMCI 1.1.2: remove diagnostics page; bound inactive backups/logs; native controller and log producers unchanged. Isolated validation only. FPMCI 1.1.3 integrates supplied AC8PropNav 2.3.9 binary, not a local native rebuild; isolated integration only. FPMCI 1.1.4: instance-only proximity fuse, no shared-table/CDO writes; eleven UI switches; full preset retired. Live detonation/damage untested. FPMCI 1.1.5: independent per-type fuse values and source-backed vanilla references. Current-game live acceptance pending. FPMCI 1.1.6: shared FOV projection, manual-focus flight and continuous camera/FOV release; native isolated and Lua validation only. FPMCI 1.1.7: bounded GUI session-lock wait and refreshed post-wait state; isolated tests only. FPMCI 1.1.8: v2.5.2-derived extra MOD management and optional flight recording. Local candidate integrates optional AC8EnhancedHUD 0.7.3; runtime testing pending. Optional chase-view cockpit HUD; in-game acceptance pending. FPMCI 1.2.0 adds enemy AI settings to the workbench sidebar and integrates third-person EEGS; live visual acceptance pending.",
   "files": [
     {
       "path": "Backup-Retention.ps1",
-      "sha256": "0e6f7af91f76655d825f9805c079f883f0dfa5ee5966908dde616e54af5802ce"
+      "sha256": "7917bdf2045994de2b6e79a37c02c253023868487a19174e55d7aa1d9aaf566a"
+    },
+    {
+      "path": "Check-Package.ps1",
+      "sha256": "b986abb63282f6135d1ad9e86e70069b0daa591304be38ce2f6dedaae88b391f"
+    },
+    {
+      "path": "Cleanup-Core.ps1",
+      "sha256": "0490850d8c6257894a04c73276b3c1c3bfba43a71c0c6e84e15dd4c8760ac418"
+    },
+    {
+      "path": "ExtraMods-Settings.ps1",
+      "sha256": "19e432fcff125f40848ac5c821f83421e3df7ea9f92f5f0e44859ab36110a2ff"
     },
     {
       "path": "Gui-Core.ps1",
-      "sha256": "a2ae0b380041c94cdc49e11b618206ae3c99b3db170c608ccf4cf328b9bff513"
+      "sha256": "a0d39ed879fcf7790e7e635bcbd07e019ecd6f90791330b4255f18612512909d"
+    },
+    {
+      "path": "Launch-Offline.ps1",
+      "sha256": "eb0f307238949df4af17925a6b8815d286c707394aa71024c4b58c431cea14dd"
+    },
+    {
+      "path": "MouseAim-Settings.ps1",
+      "sha256": "2100003dd018e237e0bcdd6b971702aef2f8d17578cab6bcfd8946d930cda585"
     },
     {
       "path": "PowerShell-Compat.ps1",
       "sha256": "066e272eaf8d49c7ab1a950951483979ec5aab5bd404766bb98420a21221cf9a"
+    },
+    {
+      "path": "Workbench-Worker.ps1",
+      "sha256": "6115870b5f5348c681cb6133e82ee42059ab18d4ef5d398939fec106b457ae2c"
+    },
+    {
+      "path": "licenses/AcePilots-MIT.txt",
+      "sha256": "6946d24d065f92497b7e2c7aea2c59705c2af231b33197f079646a505a7fbc22"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/bearing.lua",
+      "sha256": "17d827243b51c3e896b53156e9d05c6aa9edb1d32a4c85fe9a17e6a38e1be751"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/cockpit_glass.lua",
+      "sha256": "8a2e3874b0082612320121f74eb8eae1680ecc5ddd699f567c6c657e47a38181"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/config.lua",
+      "sha256": "9669f88f6a9b5ef6a7e0f3d5d771a1bf9d779b8a1a9b8757d6d526bb965b6d54"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/eegs.lua",
+      "sha256": "e0c310f1c90d31a8d3b336cdac74aa3c3d8aa93f96fda7e5d7fd18910d02702f"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/eegs_funnel.lua",
+      "sha256": "ec117780b27048a74454c8721a6c3a53f701607f9ef20eda3db98c30c6fb5af3"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/eegs_input.lua",
+      "sha256": "1da2c73b6d1530f1bbf3dbab060d08cb79d248545281e0cd0e6109892d262adf"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/eegs_pipper.lua",
+      "sha256": "0ed99a77374819cbfdcbd3f02bd3d21415aefaef4a9a76873096a13ed559d748"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/enhanced_hud.dll",
+      "sha256": "807ead8599f88f2b1e6979fd3992b1549e4078947386ced0874cc1572ca08b07"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/flight.lua",
+      "sha256": "c27b0a7370b23de63d9828e9d286a13337b0cee2c90bc75f4c52418c8993ba81"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/game_layout.lua",
+      "sha256": "1f8c3e6b12340c643a107a00f7ea2b6b6c798860fd2d07cd34e47e94dbec9934"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/hud_bridge.lua",
+      "sha256": "5e524efe244dfb4380800849ec65006d832def5ddd8082784fa295c0ed507722"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/hud_reflection.lua",
+      "sha256": "cac17a8c8e490dc2f1d7517d546c2d12496bc4c0bd5590a4f4c4f0679c0feadb"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/main.lua",
+      "sha256": "46130790ac786e4155acf2f0a546d9694c9cf712c7231490f43a3c4288817539"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/mod_settings.lua",
+      "sha256": "9afb2076956aaeaa3ba5c45e4ad1aa6551643767c5fdc291f0e669007ef28b77"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/notification_symbol.lua",
+      "sha256": "9c1b295afb6d91b6bec2933be30c5930a77468427b0b135cb745df8d81eb14e3"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/notification_widgets.lua",
+      "sha256": "fbf5172e0719232f89be567d7f0af1700d8c9b858043a23f764e0b80448a47ca"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/notifications.lua",
+      "sha256": "970a563caabfd1108f0b1cdb9a804bf1e9cd19a71dde88700402d4a4a86991c6"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/pitch_geometry.lua",
+      "sha256": "98b181800d1d4e16a7d223ff110256fb21f15be0d3783e632d6887168e92e082"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/pitch_ladder.lua",
+      "sha256": "cc86416d2015885131c217acc540be3cab170f733fb0a092a810222a4b98db2a"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/pitch_projection.lua",
+      "sha256": "3b8d0e14379c90d02ff7f0f98fa5ef5df771f14a90b78286e92fb8b58b3b4416"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/readouts.lua",
+      "sha256": "f465314be00c08f92acd5956247a6716f7a693e0a2ba3da3e6cfe14b08261e24"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/scaling.lua",
+      "sha256": "02a25876bf97017054ee75203ab890df835b5f8213d293bce8f1c40773c5c5a7"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/target_boxes.lua",
+      "sha256": "27d83d123e9675e8ccec99ab830e00a0acac02a08da0ec0a460fc359d7789964"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/third_person_ladder.lua",
+      "sha256": "d7b1c8cee89fdb51fd5137fe2d8d84b34106e5de4fa739c52bd98c6857cb8395"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/view_direction.lua",
+      "sha256": "1289c79cc4f218a22c8c9dd9ba141b8b6021092d39b5e1524d02ab268688448c"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/visor_mask.lua",
+      "sha256": "26d4c39a614182fe930ff3ebd36d7d07c639cc6651e6228cbfdf78417104aa99"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/Scripts/visor_profiles.lua",
+      "sha256": "0107d177f96869eeb75d68752a7dfe2405e9ad9d5b0598cf7817925eccc224fb"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/config.ini",
+      "sha256": "7d94f9a862bbfdcdd07bd81082dac4422d963395df7b5f761496d7f311193fd7"
+    },
+    {
+      "path": "optional-mods/AC8EnhancedHUD/enabled.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Scripts/ammo.lua",
+      "sha256": "14bbd773bb7e2d23b62661ee3afa480916939fe3de4646436cf3634d098b8f30"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Scripts/ammo_defaults.lua",
+      "sha256": "d1db5431c33c7f1ef5b026b1c5389f90ec4c41338241f7d3ac3bc4d1999d9773"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Scripts/array_reader.lua",
+      "sha256": "854b5d3f0fff9c0e98ba94e37e9d478786a9cce61b3d41259ec23244e632660c"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Scripts/beginplay.lua",
+      "sha256": "beb5a517aa1c54fde249d8f7a9360d1fdbfe19c9b64faa2f0b59f3cc147b58d8"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Scripts/build.lua",
+      "sha256": "eb1638381a6a9f2d8ab1d66f6960cc1e6b7b0e84bd2adaf21b7de415ff92f704"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Scripts/definitions.lua",
+      "sha256": "89a511e96ab8b1837ebd613c5aafc0435ea4864afe3ff8fd0d8f7f63f7a310db"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Scripts/diagnostics.lua",
+      "sha256": "10b30bdfb8709c1a1a58452cc4dbbf209fcde40dfb2d237b5ebddf22f1c0ff0e"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Scripts/fpmci_balance.lua",
+      "sha256": "a91bb73823d1d6717d79228d216da4f349c4cd6984bf4abac342324d64728e81"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Scripts/main.lua",
+      "sha256": "63f267d2050e52fbc4938c9639817ffdb3af3b4f6b64b3da4e95c869f6345409"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Scripts/menu_plan.lua",
+      "sha256": "a5538c033cb783439c87deed4b05c44d202821ad1ec2231cc57c9cdc7e17bf69"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Scripts/menu_runtime.lua",
+      "sha256": "8c957e5c549ff7db533cbaba8877bae797624ee8a3633933d20ccd02bbb3dd02"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Scripts/mission_mgp.lua",
+      "sha256": "8c490567dcd453fc4c684fb0d2d77e33d7523f0ca84da79f4aae82f89c21b27d"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Scripts/models.lua",
+      "sha256": "a3fdb3dce047595d8e4ca0ff11e19071c91ef53d31d51ed35a0203223ec47822"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Scripts/mount_paths.lua",
+      "sha256": "18d06d7faa0d66737b261dba09c6a2c338fdf31b3fb3e0106a7de94aeb8dffe4"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Scripts/mounts.lua",
+      "sha256": "6fd8a498a943171ab028d58a80b6e96ccb783f4fc47ab6ffb49a800c40ec688e"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Scripts/ownership.lua",
+      "sha256": "8717f2314611aa768443c60065d50721dc9baa7d23a283b3fad07e7b421525b0"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Scripts/plane_ids.lua",
+      "sha256": "23f011f30054bf51b611d63865e6dd58dd10b03ec907c7c9c6b68c73eeddc087"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Scripts/pod_visual.lua",
+      "sha256": "f983535799c6578a73dc91144f9586e350a09bf24d163c21cd537dbaa0fde10e"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Scripts/preview.lua",
+      "sha256": "c3e9c1965812abab5ea8e2459e487183e78f9f2cc7429d45eebcc4704b78cbed"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Scripts/preview_assets.lua",
+      "sha256": "2ef4ef1873890640179b21cd9870a9eb48f1287ebc3c0da0618a053178f799ae"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Scripts/preview_impl.lua",
+      "sha256": "a9dc25ef6afd3683e72b5a9d1a0dfd22244341a654950c67fb2c64f445cb5d4c"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Scripts/resupply.lua",
+      "sha256": "586de039e22b0a86e2d448e8941837f7bf8afc27896c5837c440416db14f26ea"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Settings.Default.ini",
+      "sha256": "a85689de5ec70ab7abb6e28f6601997f92f8b7a7abc12c7f0ba27d163294a301"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/Settings.ini",
+      "sha256": "a85689de5ec70ab7abb6e28f6601997f92f8b7a7abc12c7f0ba27d163294a301"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/enabled.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "optional-mods/SPWeaponCustomizer/native/spwmenu_runtime.dll",
+      "sha256": "42e32e528e03b8ac5c1d1e947c9754ea2861c2baad28a9a935cff77ab13d4d1c"
     },
     {
       "path": "source/MouseAim/agility_tests.cpp",
@@ -94,7 +342,7 @@
     },
     {
       "path": "source/MouseAim/hud_reference_tests.cpp",
-      "sha256": "80a6951e285d4c335caddc613b373460cc361a513f5984017f86c4a46a521e36"
+      "sha256": "5d8565dc3b880a8967f7599fd51029a49446bccbcad48d170d16e0b707871dec"
     },
     {
       "path": "source/MouseAim/hybrid_hud_tests.cpp",
@@ -386,7 +634,7 @@
     },
     {
       "path": "source/MouseAim/src/fe_runtime.h",
-      "sha256": "3d172b58d7b954a3c294398dbaa72ae311a5b4e97650eb6e21fc8aeacffdf757"
+      "sha256": "388aad145134bee08eb01de6b3d2a6f97e71f858993322846a224808a8ec837d"
     },
     {
       "path": "source/MouseAim/src/first_person_camera.h",
@@ -466,7 +714,7 @@
     },
     {
       "path": "source/MouseAim/src/mouse_aim.cpp",
-      "sha256": "ee0a6b18661ba539026e0b0195219a6e5d26d06ed35c89b7be52a461348668d6"
+      "sha256": "300e1825f7e1825e2840d2b89600e87f915c97018c28c2ca9f7388d4c1e1beb7"
     },
     {
       "path": "source/MouseAim/src/native_camera.h",
@@ -661,12 +909,16 @@
       "sha256": "374e683ba12536ef14fefab9a4fae7f75908c3e8e0e888214ac974a5c780eeca"
     },
     {
+      "path": "source/SettingsTool/AcePilots.cs",
+      "sha256": "fe8f3c2dc7518de158bf637bdb0b12006d29067b6e3797f5530a069cd9b9cb36"
+    },
+    {
       "path": "source/SettingsTool/App.cs",
-      "sha256": "c0e1d65c4fc1e476b30f42e63a74f80ca02474ad4c7e3e4b97e5428954f46a35"
+      "sha256": "69ee47198ad1a7660433f7610632bcdee25e559c46f787374128bfb233c5a99a"
     },
     {
       "path": "source/SettingsTool/AssemblyInfo.cs",
-      "sha256": "c4438841f5f2f3d5e2c404cbe8543ba6673d6025083d1404c67678e08c27c154"
+      "sha256": "6d9b6f0a072a34dba9e704d6bb5763f73e9d679a540a9e02e6eb0454207818b7"
     },
     {
       "path": "source/SettingsTool/Bootstrap.xaml",
@@ -675,6 +927,10 @@
     {
       "path": "source/SettingsTool/Bundle.cs",
       "sha256": "766ef45fa24276fb3f3153385c9e0be0ac4f78b38a41a783f7f0510443cc708e"
+    },
+    {
+      "path": "source/SettingsTool/EnhancedHud.cs",
+      "sha256": "7707398808e2849a1c384110352d1f9de848fffc0e78fa106515408375b74770"
     },
     {
       "path": "source/SettingsTool/FrameGeneration.cs",
@@ -686,11 +942,11 @@
     },
     {
       "path": "source/SettingsTool/MainWindow.xaml",
-      "sha256": "7b1eff0bf8aa8ae7d08427cfa3c5ced9dff38b7cf79e9558e8f1252faadf5652"
+      "sha256": "3ad3deb44c02c6a364c075eb81d3ddf504330187e98372a848bb4fa453d282e9"
     },
     {
       "path": "source/SettingsTool/Operations.cs",
-      "sha256": "0b545bf90beebc54e3b8d7df3677d57f07efe1393ece9a134b02d55b2bd7bb40"
+      "sha256": "2cf7a1d35f5be6a67d90f4809909867b46038a9ef650f41b71d56d2a0eebbf9a"
     },
     {
       "path": "source/SettingsTool/Runtime-Settings.ps1",
@@ -698,11 +954,11 @@
     },
     {
       "path": "source/SettingsTool/SelfTest.cs",
-      "sha256": "fccba25d95bb33c7145c6f906cd6f5a014cd501ee288537a7fa532fc8ef92bd0"
+      "sha256": "389de2a8e9c1aa371a47f1fec4b0d7da945a7a6d26a2da9dd60d1a3a8e5ce49d"
     },
     {
       "path": "source/SettingsTool/Settings.cs",
-      "sha256": "ee4e537b14800d43f805cf9f9f92ba112fcd14cdc24b4b8acb68d772b49856dc"
+      "sha256": "e441ebc106667e57299e9d8ff1342f2c0cb6109d07e45283688faa9ee3a15a76"
     },
     {
       "path": "source/SettingsTool/Update-Resources.cmd",
@@ -714,7 +970,7 @@
     },
     {
       "path": "source/SettingsTool/Workbench-Worker.ps1",
-      "sha256": "96b8a50d3b973803467e2e6ad631ecc41e2134598120f40ebf0b8715521e6f77"
+      "sha256": "6115870b5f5348c681cb6133e82ee42059ab18d4ef5d398939fec106b457ae2c"
     },
     {
       "path": "source/SettingsTool/WorkbenchTest.cs",
@@ -722,7 +978,7 @@
     },
     {
       "path": "source/SettingsTool/WorkbenchUI.cs",
-      "sha256": "171befbbdbee7f798b01b0745a782f922e1161981e35ce4e85c94829ee976cb5"
+      "sha256": "69275758593e412e3a38acecc89fe08501bf65868f9b53cf3bf188d023c8a732"
     },
     {
       "path": "source/SettingsTool/app.ico",
@@ -734,7 +990,7 @@
     },
     {
       "path": "source/SettingsTool/build.ps1",
-      "sha256": "a8f17b8b9be90b8b3340aa474cca5ebf018f9b1b62810a53e241238c3e23f542"
+      "sha256": "c45de8bd7a2bc148bcf7b2c938422f98ed348b8c3eae7be37926a0ed31cf19ed"
     },
     {
       "path": "source/SettingsTool/pack_bundle.py",
@@ -742,7 +998,7 @@
     },
     {
       "path": "source/SettingsTool/stage_external.py",
-      "sha256": "95ecf200418689e97fa68cd8a875641727638efde9d6a6314184f0b87428c0e8"
+      "sha256": "afb2368e435137d38b8e0537003838a4ecd9fa9ac453c1dea398b72f799d5e59"
     },
     {
       "path": "source/SourceInit/Scripts/fuse/core.lua",
@@ -759,6 +1015,26 @@
     {
       "path": "source/SourceInit/Scripts/propnav_bridge.lua",
       "sha256": "dcc29352477df4364eac232fd85fff77b7191a009a122c5654837dfcdb4421a7"
+    },
+    {
+      "path": "source/UE4SS/shared/UEHelpers/UEHelpers.lua",
+      "sha256": "7476f02eef0c87bfeab169f2ffe2e704363faeaae4bf9f1bda574b1e34f4a0e9"
+    },
+    {
+      "path": "tools/test-extra-mods.ps1",
+      "sha256": "b3183065cfab142bc57841b76bf230bdcbcabcb3e8dadab96f507ffb262b976c"
+    },
+    {
+      "path": "ue4ss-mods/AcePilotsMod/Scripts/main.lua",
+      "sha256": "54ce48b9fd524dbd88b2abea477512b4628f30f236cbb4a91debb9b54a400110"
+    },
+    {
+      "path": "ue4ss-mods/AcePilotsMod/acepilots_hook-26002268.dll",
+      "sha256": "fc31be8f32ed99f93d457b528fb9699ad741d14444be178ddb5fee763a997cf6"
+    },
+    {
+      "path": "ue4ss-mods/AcePilotsMod/acepilots_hook.dll",
+      "sha256": "321e3c9b682e46f0df18f173f846940a088f337ad970d42a4f9640349424c13f"
     }
   ]
 }

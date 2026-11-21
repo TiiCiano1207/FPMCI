@@ -18,3 +18,11 @@ mod-disabled.flag
 game-path.txt
 steam-path.txt
 Steam-Launch-Option.txt
+
+# Installed personal MODs; only the integrated Ace Pilots sources are tracked.
+/ue4ss-mods/*
+!/ue4ss-mods/AcePilotsMod/
+/ue4ss-mods-staging/
+/ue4ss-mods-removed/
+/Multirole-Loadouts.ini
+/Multirole-Loadouts.ini.bak

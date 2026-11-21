@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.IO;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
@@ -72,6 +73,21 @@ namespace AC8Settings {
  }
  public sealed partial class SettingsWindow {
   void GuidancePage(){
+   Section("特殊武器挂载","战斗机再平衡。各个机体SP武器增加，多功能战机体额外加强");
+   bool balance=File.Exists(Path.Combine(store.Root,"multirole-balance.enabled"));
+   var balanceRow=Row("启用机体加强","下次启动游戏生效。");
+   var balanceSwitch=new CheckBox{IsChecked=balance,Content=balance?"已开启":"已关闭",VerticalAlignment=VerticalAlignment.Center,HorizontalAlignment=HorizontalAlignment.Right};
+   Grid.SetColumn(balanceSwitch,1);balanceRow.Children.Add(balanceSwitch);
+   balanceSwitch.Click+=(sender,args)=>{
+    try{
+     bool wanted=balanceSwitch.IsChecked==true;
+     var result=Operations.Run(new OperationRequest{Root=store.Root,Action=wanted?"BalanceEnable":"BalanceDisable"},null);
+     if(!result.Success)throw new IOException(result.Message);
+     balance=wanted;SetStatus(result.Message);
+    }catch(Exception ex){balanceSwitch.IsChecked=balance;SetStatus(ex.Message,true);}
+    balanceSwitch.Content=balance?"已开启":"已关闭";
+   };
+
    if(missileMode=="none")Note("当前为仅鼠标飞控：可以保存导弹设置，下次启用导弹模块时应用。");
    Section("原版 SASM 空爆参考","SASM 原版自带空爆：直击伤害 50、爆炸半径 50 米、范围伤害 30。");
    Note("直击参考为战役单枚基础伤害，未计零件和目标伤害倍率；MSL 在剧情难度下为 56。关闭近炸增强仍保留 SASM 的原版空爆。");

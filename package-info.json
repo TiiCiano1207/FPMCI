@@ -1,6 +1,6 @@
 {
-  "version": "1.1.7",
-  "status": "release-1.1.7",
+  "version": "1.2.0",
+  "status": "release-1.2.0",
   "game_build": "26002268",
   "game_sha256": "3E47FD42858D1F2B81E59D7F57394A014C0EB6AAF4C02EE3DA351B6A42936BE2",
   "steam_app_id": 2288340,
@@ -17,12 +17,12 @@
     "4": 3,
     "5": 3
   },
-  "native_sha256": "b74a1fdcb55832dd1b67ba93cb02bfe4b93ddabaec7a3b152aee6d31092362e8",
+  "native_sha256": "c49e0965b0841c6e9885289c111bf9f08933a54b271936a3ae16e9398919fd11",
   "local_customization": "Cockpit mouse control, aircraft-relative C head look, smooth camera roll return; release 1.0 launcher UI and persistent in-game preferences. Original flight calculations and online behavior retained. FPMCI 1.1.6: shared FOV-aware head/ring input; manual focus retains flight; continuous camera/FOV return.",
-  "settings_tool_version": "1.1.5",
+  "settings_tool_version": "1.2.0",
   "distribution": "external-resources",
   "camera_patch_version": "2.2.1-build26002268",
-  "release_version": "1.1.7",
+  "release_version": "1.2.0",
   "cleanup_patch": "FOV ownership recognition and GUI-selected path fix",
   "frame_generation": "NVIDIA DLSS-G; two-key Engine.ini merge on MOD startup",
   "missile_guidance_editor": "1.0-guidance-1; 13 numeric values, next-launch application",
@@ -41,7 +41,7 @@
     }
   ],
   "frame_generation_editor": "Common settings switch, default off, saved for next launch",
-  "runtime_validation": "Static signatures and fixture tests only; updated-game session acceptance pending.",
+  "runtime_validation": "Workbench and isolated deployment tests. Su-35 MGP user-verified. Ace Pilots flare cap observed in logs. Third-person EEGS live visual acceptance pending.",
   "display_name": "FPMCI",
   "display_full_name": "First-Person Mouse Control Integration",
   "ui_style": "Single light aviation briefing theme; Big Shoulders headings; native WPF controls",

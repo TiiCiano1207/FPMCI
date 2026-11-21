@@ -6,6 +6,23 @@ function Read-AC8BackupRecord([string]$Path) {
  catch {Write-Warning ('Unreadable backup metadata, treated as unfinished: '+$Path);return $null}
 }
 
+function Test-AC8WorkbenchInUse([IO.DirectoryInfo]$Directory) {
+ # The UI creates the request before the worker starts and reads the response
+ # after it exits. Cover both handoffs, even with a second cleanup process.
+ $handoff=[DateTime]::UtcNow.AddMinutes(-2)
+ if ($Directory.LastWriteTimeUtc -gt $handoff) {return $true}
+ foreach($name in @('request.json','response.json','operation.log')){
+  if([IO.File]::GetLastWriteTimeUtc((Join-Path $Directory.FullName $name)) -gt $handoff){return $true}
+ }
+ $lock=Join-Path $Directory.FullName 'worker.lock'
+ if (!(Test-Path -LiteralPath $lock -PathType Leaf)) {return $false}
+ try {
+  $probe=[IO.File]::Open($lock,'Open','Read','None')
+  $probe.Dispose()
+  return $false
+ } catch [IO.IOException] {return $true}
+}
+
 # Call under Enter-AC8Operation. Only MOD-generated direct children are eligible.
 # Logical sizes deliberately overcount hard links for a stable, conservative cap.
 function Get-AC8BackupGroups([string]$PackageRoot) {
@@ -70,7 +87,8 @@ function Get-AC8BackupGroups([string]$PackageRoot) {
    foreach($dir in Get-ChildItem -LiteralPath $base -Directory -Force){
     if($dir.Name -notmatch $spec[2]){continue}
     Assert-AC8NoLinks $dir.FullName -Tree
-    $groups[$dir.FullName]=[pscustomobject]@{Category=$spec[1];Paths=@($dir.FullName);Order=$dir.CreationTime.ToString('yyyyMMdd-HHmmss')+'-'+$dir.Name;Protected=$false;Stage=''}
+    $busy=$spec[0] -eq 'diagnostics' -and (Test-AC8WorkbenchInUse $dir)
+    $groups[$dir.FullName]=[pscustomobject]@{Category=$spec[1];Paths=@($dir.FullName);Order=$dir.CreationTime.ToString('yyyyMMdd-HHmmss')+'-'+$dir.Name;Protected=$busy;Stage=''}
    }
   }
   $logs=Join-Path $package 'diagnostics'
@@ -86,7 +104,7 @@ function Get-AC8BackupGroups([string]$PackageRoot) {
     $stem=$Matches[1]
     Assert-AC8NoLinks $file.FullName
     $prefix=Join-Path $logs $stem
-    if(!$groups.ContainsKey($prefix)){$groups[$prefix]=[pscustomobject]@{Category='diagnostics';Paths=@();Order=$stem;Protected=($prefix -ieq $env:AC8_MONITOR_LOG_PREFIX);Stage=''}}
+    if(!$groups.ContainsKey($prefix)){$groups[$prefix]=[pscustomobject]@{Category='diagnostics';Paths=@();Order=($stem -replace '^(session-monitor|direct-session)-','');Protected=($prefix -ieq $env:AC8_MONITOR_LOG_PREFIX);Stage=''}}
     $groups[$prefix].Paths+= $file.FullName
    }
   }
