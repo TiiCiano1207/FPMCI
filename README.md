@@ -28,7 +28,27 @@ Download the full release ZIP, extract it outside the game directory, run **AC8W
 
 ## 1.2.0 更新 / Changes
 
-敌方 AI 增强专页、第三人称 EEGS、附加 MOD 排序。详见 [完整更新说明](CHANGELOG-1.2.0.md)。
+本版汇总公开版 1.1.7 以来的更新。
+
+- **敌方 AI 增强整合进工作台。** 合并两个 Ace Pilots 版本，在左侧「敌方AI增强」专页启停和配置。游戏内快捷键已关闭，设置在下次启动游戏时生效。
+- **敌机行为可按预设或逐项调整。** 提供「关闭」「全员 5 级」「强化 2」「强化 3」「强化 4」「极限」六个预设，也可单独修改机动权重、攻击与防御行为和作用范围。鼠标悬停在选项上可查看中文说明。
+- **可设定热焰弹次数。** 开启「允许使用热焰弹」后，可输入每架飞机的累计上限。默认 9 次，输入 0 表示不限。上限只计入由 MOD 主动触发的释放。
+- **增强 HUD 支持第三人称机炮瞄具。** 在「常用设置」下开启增强 HUD，并通过「第三人称 HUD」子开关控制机外仪表和 EEGS。选中的空中目标进入默认 1800 米范围时，EEGS 以弧圈和弹道线替换原机炮瞄准圈。
+- **附加 MOD 可导入并调整顺序。** 在「模组管理」中导入 ZIP 或文件夹、启停或移到备份。拖动列表行或使用「上移」「下移」后，已启用的 MOD 会在下次启动时按列表从上到下加载。
+- **保存设置后停留在原位置。** 点击「保存设置」后保留当前页面的滚动位置。「安装说明」放在「开始游戏」旁边，方便边配置边查阅。
+- **飞行记录可按需开启。** 「常用设置」中的「保存飞行记录」默认关闭。开启后，下次启动会保存 FE 和 Shadow 的 CSV 飞行数据。
+
+This release includes the changes since public version 1.1.7.
+
+- **Enemy AI enhancement is built into the workbench.** The two Ace Pilots versions are merged into a dedicated sidebar page. Enable and configure the module before launching. Its in-game hotkeys are disabled, and settings take effect on the next launch.
+- **Presets and individual AI controls are available.** Choose Off, All Rank 5, Boost 2, Boost 3, Boost 4, or Max. Adjust maneuver weights, combat behavior and scope individually. Hover over a setting for its Chinese description.
+- **A per-aircraft flare limit is configurable.** Enabling flares reveals the limit for releases triggered by the mod. The default is 9 per aircraft. Enter 0 for unlimited releases.
+- **The enhanced HUD adds a third-person gun sight.** Enable Enhanced HUD in Common Settings and use the Third-Person HUD toggle for chase-view instruments and EEGS. When the selected airborne target enters the default 1,800 m range, EEGS replaces the stock gun reticle with an arc and ballistic guide lines.
+- **Additional mods can be imported and reordered.** Import a ZIP or folder, toggle mods, or move them to backup. Drag rows or use Move Up and Move Down. Enabled mods load from top to bottom on the next launch.
+- **Saving settings keeps your scroll position.** Save Settings leaves the page at the same position. The installation guide is available next to Start Game.
+- **Flight recording is optional.** Save Flight Records is off by default. Enable it to save FE and Shadow flight data as CSV files on the next launch.
+
+安装、加载顺序与配置细节见 [完整更新说明 / Full release notes](CHANGELOG-1.2.0.md)。
 
 ## 1.1.7 更新 / Changes
 
